@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ItemCard from '../components/ItemCard.astro';
+import { getCollection } from 'astro:content';
+
+const items = await getCollection('items');
+const sorted = items.sort((a, b) => a.data.year - b.data.year);
+const eras = [...new Set(sorted.map(i => i.data.era))];
+---
+
+<BaseLayout title="Collection" description="All artifacts in the Museum of Civilization.">
+  <div class="page">
+    <div class="page-inner">
+      <header class="page-header">
+        <p class="page-eyebrow">The Archive</p>
+        <h1>The Collection</h1>
+        <p class="page-description">
+          {items.length} artifacts spanning the technologies that defined modern life.
+        </p>
+      </header>
+
+      <div class="filter-bar" role="tablist" aria-label="Filter by era">
+        <button class="filter-btn active" data-era="all" role="tab" aria-selected="true">All</button>
+        {eras.map(era => (
+          <button class="filter-btn" data-era={era} role="tab" aria-selected="false">{era}</button>
+        ))}
+      </div>
+
+      <div class="era-sections">
+        {eras.map(era => {
+          const eraItems = sorted.filter(i => i.data.era === era);
+          return (
+            <section class="era-section" data-era={era}>
+              <h2 class="era-title">{era}</h2>
+              <div class="card-grid">
+                {eraItems.map(item => (
+                  <ItemCard
+                    name={item.data.name}
+                    year={item.data.year}
+                    era={item.data.era}
+                    slug={item.id}
+                    image={item.data.image}
+                    tagline={item.data.tagline}
+                  />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+  const sections = document.querySelectorAll<HTMLElement>('.era-section');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+
+      const selected = btn.dataset.era;
+      sections.forEach(section => {
+        section.style.display =
+          selected === 'all' || section.dataset.era === selected ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<style>
+  .page {
+    padding: 4rem var(--page-padding);
+  }
+
+  .page-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .page-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .page-description {
+    color: var(--color-text-muted);
+    max-width: 500px;
+  }
+
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .filter-btn {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--color-accent-dim);
+    color: var(--color-text);
+  }
+
+  .filter-btn.active {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    background: rgba(200, 169, 110, 0.07);
+  }
+
+  .era-section {
+    margin-bottom: 4rem;
+  }
+
+  .era-title {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+</style>

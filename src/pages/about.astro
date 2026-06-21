@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About" description="About the Museum of Civilization.">
+  <div class="page">
+    <div class="page-inner">
+      <header class="page-header">
+        <p class="page-eyebrow">Curatorial Statement</p>
+        <h1>About This Museum</h1>
+      </header>
+
+      <div class="prose">
+        <p>
+          In Emily St. John Mandel's novel <em>Station Eleven</em>, a traveling troupe of actors
+          maintains a Museum of Civilization — a collection of objects from the world before
+          the collapse. A smartphone. A credit card. Things that were once mundane, now artifacts.
+        </p>
+        <p>
+          This is my version of that museum, assembled while civilization is still running.
+        </p>
+        <p>
+          Each object here represents a moment when technology shifted — when something new
+          entered the world and quietly changed how humans communicated, played, worked, or
+          understood themselves. I lived through these shifts. I held these objects. I remember
+          when they felt like the future.
+        </p>
+        <p>
+          This archive is equal parts personal memoir and cultural record. The historical
+          notes reflect why each object mattered broadly. The personal accounts reflect
+          what they meant to me specifically.
+        </p>
+        <p>
+          Civilization does not end all at once. It accumulates in objects like these.
+        </p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .page {
+    padding: 4rem var(--page-padding) 6rem;
+  }
+
+  .page-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .page-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+
+  .prose p {
+    color: var(--color-text-muted);
+    line-height: 1.85;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+  }
+
+  .prose em {
+    font-style: italic;
+    color: var(--color-text);
+  }
+</style>

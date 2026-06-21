@@ -1,0 +1,112 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "A personal archive of objects that marked turning points in civilization." } = Astro.props;
+const path = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title} — Museum of Civilization</title>
+    <link rel="stylesheet" href="/styles/global.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="/" class="site-logo" aria-label="Museum of Civilization — Home">
+          <img src="/images/MoC Logo 4_small.jpg" alt="Museum of Civilization" />
+        </a>
+        <nav class="site-nav">
+          <a href="/" class={path === '/' ? 'active' : ''}>Home</a>
+          <a href="/collection" class={path.startsWith('/collection') || path.startsWith('/item') ? 'active' : ''}>Collection</a>
+          <a href="/about" class={path === '/about' ? 'active' : ''}>About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <p>Museum of Civilization &mdash; A personal archive of objects that marked turning points in civilization.</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.25rem var(--page-padding);
+    position: sticky;
+    top: 0;
+    background: rgba(13, 13, 13, 0.95);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .header-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .site-logo {
+    display: block;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  .site-logo img {
+    height: 100%;
+    width: auto;
+    display: block;
+    border-radius: 6px;
+  }
+
+  .site-nav {
+    display: flex;
+    gap: 2rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .site-nav a {
+    color: var(--color-text-muted);
+  }
+
+  .site-nav a:hover {
+    color: var(--color-accent);
+  }
+
+  .site-nav a.active {
+    color: var(--color-accent);
+  }
+
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    padding: 2rem var(--page-padding);
+    margin-top: 6rem;
+  }
+
+  .footer-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+  }
+</style>

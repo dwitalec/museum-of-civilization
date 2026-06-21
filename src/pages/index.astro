@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ItemCard from '../components/ItemCard.astro';
+import { getCollection } from 'astro:content';
+
+const items = await getCollection('items');
+const sorted = items.sort((a, b) => a.data.year - b.data.year);
+const featured = sorted.slice(0, 3);
+---
+
+<BaseLayout title="Home">
+
+  <section class="hero">
+    <div class="hero-inner">
+      <p class="hero-eyebrow">Est. 2026</p>
+      <img
+        src="/images/MoC Logo 2_pillars.jpg"
+        alt="Museum of Civilization — devices as classical pillars"
+        class="hero-emblem"
+      />
+      <div class="hero-rule"></div>
+      <p class="hero-tagline">
+        A personal archive of objects that marked turning points in civilization
+      </p>
+      <div class="hero-rule"></div>
+      <a href="/collection" class="hero-cta">Enter the Collection</a>
+    </div>
+  </section>
+
+  <section class="featured">
+    <div class="section-inner">
+      <header class="section-header">
+        <h2>From the Collection</h2>
+        <a href="/collection" class="see-all">View all {items.length} artifacts &rarr;</a>
+      </header>
+      <div class="card-grid">
+        {featured.map(item => (
+          <ItemCard
+            name={item.data.name}
+            year={item.data.year}
+            era={item.data.era}
+            slug={item.id}
+            image={item.data.image}
+            tagline={item.data.tagline}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .hero {
+    padding: clamp(4rem, 10vw, 8rem) var(--page-padding);
+    border-bottom: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .hero-inner {
+    max-width: 620px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .hero-emblem {
+    width: clamp(200px, 50vw, 420px);
+    height: auto;
+  }
+
+  .hero-rule {
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--color-accent), transparent);
+  }
+
+  .hero-tagline {
+    font-size: clamp(0.65rem, 1.3vw, 0.78rem);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    line-height: 1.8;
+    max-width: 480px;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 0.85rem 2.5rem;
+    border: 1px solid var(--color-accent-dim);
+    color: var(--color-accent);
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: background 0.2s, color 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .hero-cta:hover {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  /* ── Featured Artifacts ── */
+  .featured {
+    padding: clamp(3rem, 8vw, 5rem) var(--page-padding) 6rem;
+  }
+
+  .section-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .see-all {
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+</style>

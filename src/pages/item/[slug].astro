@@ -1,0 +1,466 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const allItems = await getCollection('items');
+  const sorted = allItems.sort((a, b) => a.data.year - b.data.year);
+  return sorted.map((item) => ({
+    params: { slug: item.id },
+    props: { item },
+  }));
+}
+
+const { item } = Astro.props;
+const allItemsRaw = await getCollection('items');
+const allItems = allItemsRaw.sort((a, b) => a.data.year - b.data.year);
+const currentIndex = allItems.findIndex(i => i.id === item.id);
+const prevItem = currentIndex > 0 ? allItems[currentIndex - 1] : null;
+const nextItem = currentIndex < allItems.length - 1 ? allItems[currentIndex + 1] : null;
+const { Content } = await render(item);
+const { name, year, era, tagline, image, historicalContext, personalStory } = item.data;
+---
+
+<BaseLayout title={name} description={tagline}>
+  <article class="item-page">
+
+    <div class="item-hero">
+      {image && (
+        <div class="item-image-wrap">
+          <img src={image} alt={name} />
+        </div>
+      )}
+      <div class="item-intro">
+        <div class="item-meta">
+          <span class="item-year">{year}</span>
+          <span class="meta-sep">/</span>
+          <span class="item-era">{era}</span>
+        </div>
+        <h1 class="item-name">{name}</h1>
+        <p class="item-tagline">{tagline}</p>
+        <a href="/collection" class="back-link">&larr; Back to Collection</a>
+      </div>
+    </div>
+
+    <div class="item-body">
+
+      <section class="item-section">
+        <div class="section-label">
+          <span>Historical Significance</span>
+        </div>
+        <div class="section-content prose">
+          <p>{historicalContext}</p>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <section class="item-section">
+        <div class="section-label personal">
+          <span>My Experience</span>
+        </div>
+        <div class="section-content prose personal-prose">
+          <p>{personalStory}</p>
+        </div>
+      </section>
+
+      <div class="extra-content prose">
+        <Content />
+      </div>
+
+    </div>
+
+    <nav class="prev-next" aria-label="Item navigation">
+      <div class="prev-next-inner">
+        {prevItem ? (
+          <a href={`/item/${prevItem.id}`} class="prev-next-link prev">
+            <span class="pn-direction">&larr; Previous</span>
+            <span class="pn-name">{prevItem.data.name}</span>
+            <span class="pn-year">{prevItem.data.year}</span>
+          </a>
+        ) : <div />}
+        {nextItem ? (
+          <a href={`/item/${nextItem.id}`} class="prev-next-link next">
+            <span class="pn-direction">Next &rarr;</span>
+            <span class="pn-name">{nextItem.data.name}</span>
+            <span class="pn-year">{nextItem.data.year}</span>
+          </a>
+        ) : <div />}
+      </div>
+    </nav>
+
+  </article>
+
+  <section class="carousel" aria-label="Browse all artifacts">
+    <div class="carousel-header">
+      <span class="carousel-label">The Collection</span>
+      <div class="carousel-arrows">
+        {prevItem
+          ? <a href={`/item/${prevItem.id}`} class="carousel-arrow" aria-label={`Previous: ${prevItem.data.name}`}>&larr;</a>
+          : <span class="carousel-arrow disabled">&larr;</span>
+        }
+        {nextItem
+          ? <a href={`/item/${nextItem.id}`} class="carousel-arrow" aria-label={`Next: ${nextItem.data.name}`}>&rarr;</a>
+          : <span class="carousel-arrow disabled">&rarr;</span>
+        }
+      </div>
+    </div>
+    <div class="carousel-track" id="carousel-track">
+      {allItems.map(i => (
+        <a
+          href={`/item/${i.id}`}
+          class={`carousel-item${i.id === item.id ? ' active' : ''}`}
+          aria-current={i.id === item.id ? 'page' : undefined}
+        >
+          <div class="carousel-thumb">
+            {i.data.image
+              ? <img src={i.data.image} alt={i.data.name} loading="lazy" />
+              : <span class="thumb-placeholder">{i.data.name[0]}</span>
+            }
+          </div>
+          <span class="carousel-item-year">{i.data.year}</span>
+          <span class="carousel-item-name">{i.data.name}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const track = document.getElementById('carousel-track');
+  const active = track?.querySelector('.active') as HTMLElement | null;
+  if (track && active) {
+    const offset = active.offsetLeft - track.clientWidth / 2 + active.offsetWidth / 2;
+    track.scrollLeft = Math.max(0, offset);
+  }
+</script>
+
+<style>
+  .item-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 3rem var(--page-padding) 4rem;
+  }
+
+  .item-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    margin-bottom: 5rem;
+  }
+
+  @media (max-width: 700px) {
+    .item-hero {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  .item-image-wrap {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .item-image-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .item-intro {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .item-year {
+    color: var(--color-accent);
+  }
+
+  .meta-sep {
+    color: var(--color-border);
+  }
+
+  .item-era {
+    color: var(--color-text-muted);
+  }
+
+  .item-name {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .item-tagline {
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .back-link {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+  }
+
+  .back-link:hover {
+    color: var(--color-accent);
+  }
+
+  .item-body {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    max-width: 700px;
+  }
+
+  .item-section {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .item-section {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+
+  .section-label {
+    padding-top: 0.2rem;
+  }
+
+  .section-label span {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .section-label.personal span {
+    color: var(--color-accent-dim);
+  }
+
+  .section-content p {
+    line-height: 1.8;
+    color: var(--color-text);
+  }
+
+  .personal-prose p {
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .section-divider {
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .extra-content {
+    margin-top: 1rem;
+  }
+
+  .extra-content :global(p) {
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  /* Prev / Next bar */
+  .prev-next {
+    margin-top: 5rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 2rem;
+  }
+
+  .prev-next-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .prev-next-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    color: var(--color-text-muted);
+    transition: color 0.2s;
+  }
+
+  .prev-next-link.next {
+    text-align: right;
+  }
+
+  .prev-next-link:hover {
+    color: var(--color-accent);
+  }
+
+  .pn-direction {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .prev-next-link:hover .pn-direction {
+    color: var(--color-accent-dim);
+  }
+
+  .pn-name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--color-text);
+  }
+
+  .prev-next-link:hover .pn-name {
+    color: var(--color-accent);
+  }
+
+  .pn-year {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Carousel */
+  .carousel {
+    border-top: 1px solid var(--color-border);
+    margin-top: 3rem;
+    padding: 2rem var(--page-padding) 3rem;
+    background: var(--color-surface);
+  }
+
+  .carousel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--max-width);
+    margin: 0 auto 1.5rem;
+  }
+
+  .carousel-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .carousel-arrows {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .carousel-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .carousel-arrow:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .carousel-arrow.disabled {
+    opacity: 0.25;
+    cursor: default;
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 0.75rem;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    scrollbar-width: none;
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .carousel-item {
+    flex: 0 0 110px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    color: var(--color-text-muted);
+    transition: color 0.2s;
+  }
+
+  .carousel-item:hover {
+    color: var(--color-text);
+  }
+
+  .carousel-item.active {
+    color: var(--color-accent);
+  }
+
+  .carousel-thumb {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s;
+  }
+
+  .carousel-item.active .carousel-thumb {
+    border-color: var(--color-accent);
+  }
+
+  .carousel-item:hover .carousel-thumb {
+    border-color: var(--color-accent-dim);
+  }
+
+  .carousel-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+
+  .carousel-item:hover .carousel-thumb img {
+    transform: scale(1.05);
+  }
+
+  .thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+  }
+
+  .carousel-item-year {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .carousel-item-name {
+    font-size: 0.72rem;
+    font-family: var(--font-serif);
+    line-height: 1.2;
+  }
+</style>
