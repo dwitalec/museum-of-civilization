@@ -35,6 +35,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </p>
       </div>
     </div>
+
+    <figure class="collection-panorama">
+      <div class="panorama-frame">
+        <img
+          src="/images/Collection1.JPG"
+          alt="The left half of the collection arranged on a shelf — AirPods, Kindle, Apple Watch, Nintendo cartridges, and the Tesla model."
+          width="4949"
+          height="2999"
+          loading="lazy"
+        />
+        <img
+          src="/images/Collection2.JPG"
+          alt="The right half of the collection arranged on a shelf — StarTAC phone, VHS cassette, Droid X, iPod nano, Game Boy, Xbox Kinect, and a floppy disk."
+          width="5107"
+          height="3100"
+          loading="lazy"
+        />
+      </div>
+      <figcaption>
+        <span class="figcaption-eyebrow">The Collection, Assembled</span>
+        The entire collection, laid out side by side on a shelf in my basement —
+        the whole museum in one place before it was ever a website.
+      </figcaption>
+    </figure>
   </div>
 </BaseLayout>
 
@@ -76,5 +100,55 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   .prose em {
     font-style: italic;
     color: var(--color-text);
+  }
+
+  /* The collection diptych — breaks out wider than the text column */
+  .collection-panorama {
+    max-width: var(--max-width);
+    margin: 5rem auto 0;
+  }
+
+  .panorama-frame {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--color-border);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .panorama-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  .panorama-frame:hover img {
+    transform: scale(1.03);
+  }
+
+  .collection-panorama figcaption {
+    margin-top: 1.25rem;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    max-width: 640px;
+  }
+
+  .figcaption-eyebrow {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  @media (max-width: 640px) {
+    .panorama-frame {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
