@@ -1,0 +1,491 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const items = await getCollection('items');
+
+// Minimal data handed to the client-side game.
+const gameData = items.map((i) => ({
+  name: i.data.name,
+  year: i.data.year,
+  era: i.data.era,
+  image: i.data.image,
+  slug: i.id,
+}));
+---
+
+<BaseLayout
+  title="Play"
+  description="Do you remember this? A guessing game through the artifacts of the Museum of Civilization."
+>
+  <div class="page">
+    <div class="page-inner">
+      <header class="page-header">
+        <p class="page-eyebrow">An Interactive Exhibit</p>
+        <h1>Do You Remember This?</h1>
+      </header>
+
+      <div class="game-stage">
+        <!-- ── Intro ── -->
+        <section class="screen" data-screen="intro">
+          <p class="intro-lead">
+            Eight artifacts, drawn at random from the collection. Some rounds ask
+            <em>what year</em> it arrived; others ask <em>what it is</em>. Four
+            choices each. How well do you know the world you lived through?
+          </p>
+          <button class="btn btn-primary" data-action="start">Begin</button>
+        </section>
+
+        <!-- ── Play ── -->
+        <section class="screen" data-screen="play" hidden>
+          <div class="game-meta">
+            <span data-role="progress">Round 1 of 8</span>
+            <span data-role="score">Score 0</span>
+          </div>
+          <div class="game-progress-bar"><div data-role="progress-fill"></div></div>
+
+          <div class="artifact-frame">
+            <img data-role="artifact-img" src="" alt="A mystery artifact" />
+          </div>
+
+          <p class="question" data-role="question"></p>
+
+          <div class="options" data-role="options">
+            <button class="option" type="button"></button>
+            <button class="option" type="button"></button>
+            <button class="option" type="button"></button>
+            <button class="option" type="button"></button>
+          </div>
+
+          <div class="feedback" data-role="feedback" hidden>
+            <p data-role="reveal"></p>
+            <button class="btn btn-primary" data-action="next" data-role="next"></button>
+          </div>
+        </section>
+
+        <!-- ── Results ── -->
+        <section class="screen" data-screen="results" hidden>
+          <p class="result-eyebrow">Your Verdict</p>
+          <p class="result-score"><span data-role="final-score">0</span> / 8</p>
+          <p class="result-title" data-role="result-title"></p>
+          <p class="result-blurb" data-role="result-blurb"></p>
+          <button class="btn btn-primary" data-action="restart">Play Again</button>
+          <a class="result-link" href="/timeline">Or explore the full timeline &rarr;</a>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script id="game-data" type="application/json" is:inline set:html={JSON.stringify(gameData)}></script>
+</BaseLayout>
+
+<script>
+  type Artifact = {
+    name: string;
+    year: number;
+    era: string;
+    image?: string;
+    slug: string;
+  };
+
+  const ROUNDS = 8;
+  const all: Artifact[] = JSON.parse(
+    document.getElementById('game-data')!.textContent || '[]'
+  );
+
+  // ── Helpers ──
+  const shuffle = <T,>(arr: T[]): T[] => {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  const $ = <T extends Element>(sel: string) => document.querySelector(sel) as T;
+  const role = <T extends Element>(name: string) =>
+    document.querySelector(`[data-role="${name}"]`) as T;
+
+  function showScreen(name: string) {
+    document.querySelectorAll<HTMLElement>('[data-screen]').forEach((s) => {
+      s.hidden = s.dataset.screen !== name;
+    });
+  }
+
+  // ── Build a single round ──
+  type Round = { artifact: Artifact; kind: 'year' | 'what'; options: string[]; answer: string };
+
+  function buildRounds(): Round[] {
+    const picks = shuffle(all).slice(0, ROUNDS);
+    const allYears = [...new Set(all.map((a) => a.year))];
+    const allNames = all.map((a) => a.name);
+
+    return picks.map((artifact, i) => {
+      // Alternate the two question types for variety.
+      const kind: 'year' | 'what' = i % 2 === 0 ? 'year' : 'what';
+
+      if (kind === 'year') {
+        const answer = String(artifact.year);
+        const opts = new Set<string>([answer]);
+        // Plausible distractors: other real artifact years, then nearby offsets.
+        const pool = [
+          ...shuffle(allYears),
+          artifact.year - 3,
+          artifact.year + 4,
+          artifact.year - 8,
+          artifact.year + 9,
+        ];
+        for (const y of pool) {
+          if (opts.size >= 4) break;
+          if (y > 1900 && y <= new Date().getFullYear()) opts.add(String(y));
+        }
+        let y = artifact.year + 1;
+        while (opts.size < 4) opts.add(String(y++));
+        return { artifact, kind, options: shuffle([...opts]), answer };
+      }
+
+      const answer = artifact.name;
+      const others = shuffle(allNames.filter((n) => n !== answer)).slice(0, 3);
+      return { artifact, kind, options: shuffle([answer, ...others]), answer };
+    });
+  }
+
+  // ── Game state ──
+  let rounds: Round[] = [];
+  let current = 0;
+  let score = 0;
+
+  function startGame() {
+    rounds = buildRounds();
+    current = 0;
+    score = 0;
+    showScreen('play');
+    renderRound();
+  }
+
+  function renderRound() {
+    const r = rounds[current];
+
+    role<HTMLElement>('progress').textContent = `Round ${current + 1} of ${ROUNDS}`;
+    role<HTMLElement>('score').textContent = `Score ${score}`;
+    role<HTMLElement>('progress-fill').style.width = `${(current / ROUNDS) * 100}%`;
+
+    const img = role<HTMLImageElement>('artifact-img');
+    img.src = r.artifact.image || '';
+    img.alt = 'A mystery artifact from the collection';
+
+    role<HTMLElement>('question').textContent =
+      r.kind === 'year'
+        ? 'What year did this arrive?'
+        : 'What is this artifact?';
+
+    // Reuse the four pre-rendered buttons so Astro's scoped styles apply.
+    const optionBtns = role<HTMLElement>('options').querySelectorAll<HTMLButtonElement>('.option');
+    optionBtns.forEach((btn, idx) => {
+      const opt = r.options[idx];
+      btn.textContent = opt;
+      btn.className = 'option';
+      btn.disabled = false;
+      btn.onclick = () => choose(opt, btn);
+    });
+
+    const feedback = role<HTMLElement>('feedback');
+    feedback.hidden = true;
+  }
+
+  function choose(choice: string, btn: HTMLButtonElement) {
+    const r = rounds[current];
+    const correct = choice === r.answer;
+    if (correct) score++;
+
+    // Lock and mark every option.
+    document.querySelectorAll<HTMLButtonElement>('.option').forEach((b) => {
+      b.disabled = true;
+      if (b.textContent === r.answer) b.classList.add('correct');
+    });
+    if (!correct) btn.classList.add('wrong');
+
+    // Reveal line.
+    const a = r.artifact;
+    role<HTMLElement>('reveal').innerHTML = correct
+      ? `<strong>Correct.</strong> ${a.name}, ${a.year}. <a href="/item/${a.slug}">See its story &rarr;</a>`
+      : `<strong>Not quite.</strong> It's ${a.name}, ${a.year}. <a href="/item/${a.slug}">See its story &rarr;</a>`;
+
+    role<HTMLElement>('score').textContent = `Score ${score}`;
+
+    const nextBtn = role<HTMLButtonElement>('next');
+    nextBtn.textContent = current === ROUNDS - 1 ? 'See Your Verdict' : 'Next Artifact';
+
+    role<HTMLElement>('feedback').hidden = false;
+  }
+
+  function next() {
+    current++;
+    if (current >= ROUNDS) {
+      showResults();
+    } else {
+      renderRound();
+    }
+  }
+
+  function showResults() {
+    role<HTMLElement>('progress-fill').style.width = '100%';
+    role<HTMLElement>('final-score').textContent = String(score);
+
+    const tiers: { min: number; title: string; blurb: string }[] = [
+      { min: 8, title: 'Curator Emeritus', blurb: 'A flawless run. You didn’t just live through these — you remember them.' },
+      { min: 6, title: 'Certified Old Soul', blurb: 'You’ve got the receipts. These objects clearly left a mark on you.' },
+      { min: 4, title: 'Casual Time Traveler', blurb: 'A solid memory for the artifacts that shaped the modern world.' },
+      { min: 2, title: 'Digital Native', blurb: 'The recent stuff lands, but the analog era is a foreign country.' },
+      { min: 0, title: 'Born Yesterday', blurb: 'No shame — that’s exactly what a museum is for. Take another lap.' },
+    ];
+    const tier = tiers.find((t) => score >= t.min)!;
+    role<HTMLElement>('result-title').textContent = tier.title;
+    role<HTMLElement>('result-blurb').textContent = tier.blurb;
+
+    showScreen('results');
+  }
+
+  // ── Wire up actions ──
+  document.querySelectorAll<HTMLElement>('[data-action]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const action = el.dataset.action;
+      if (action === 'start' || action === 'restart') startGame();
+      else if (action === 'next') next();
+    });
+  });
+</script>
+
+<style>
+  .page {
+    padding: 4rem var(--page-padding) 6rem;
+  }
+
+  .page-inner {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    text-align: center;
+    align-items: center;
+  }
+
+  .page-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+
+  .game-stage {
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  /* ── Shared button ── */
+  .btn {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.85rem 2.25rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    border: 1px solid var(--color-accent-dim);
+  }
+
+  .btn-primary {
+    background: none;
+    color: var(--color-accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  /* ── Intro ── */
+  [data-screen='intro'] {
+    text-align: center;
+  }
+
+  .intro-lead {
+    color: var(--color-text-muted);
+    line-height: 1.85;
+    margin-bottom: 2rem;
+  }
+
+  .intro-lead em {
+    font-style: italic;
+    color: var(--color-text);
+  }
+
+  /* ── Play ── */
+  .game-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  .game-progress-bar {
+    height: 2px;
+    background: var(--color-border);
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+  }
+
+  .game-progress-bar > div {
+    height: 100%;
+    width: 0;
+    background: var(--color-accent);
+    transition: width 0.4s ease;
+  }
+
+  .artifact-frame {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .artifact-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .question {
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 3vw, 1.6rem);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .option {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .option:hover:not(:disabled) {
+    border-color: var(--color-accent);
+  }
+
+  .option:disabled {
+    cursor: default;
+    opacity: 0.45;
+  }
+
+  /* Keep the revealed answer + the player's wrong pick fully vivid. */
+  .option.correct,
+  .option.wrong {
+    opacity: 1;
+  }
+
+  .option.correct {
+    border-color: #6f9e6f;
+    background: rgba(111, 158, 111, 0.16);
+    color: var(--color-text);
+  }
+
+  .option.wrong {
+    border-color: #b06a5e;
+    background: rgba(176, 106, 94, 0.16);
+  }
+
+  .feedback {
+    margin-top: 1.75rem;
+    text-align: center;
+  }
+
+  .feedback p {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .feedback strong {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+
+  /* ── Results ── */
+  [data-screen='results'] {
+    text-align: center;
+  }
+
+  .result-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: 1rem;
+  }
+
+  .result-score {
+    font-family: var(--font-serif);
+    font-size: clamp(3rem, 12vw, 5rem);
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .result-title {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    margin: 0.75rem 0 1rem;
+  }
+
+  .result-blurb {
+    color: var(--color-text-muted);
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 0 auto 2rem;
+  }
+
+  .result-link {
+    display: block;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+  }
+
+  @media (max-width: 480px) {
+    .options {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

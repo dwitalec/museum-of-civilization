@@ -27,6 +27,7 @@ const path = Astro.url.pathname;
           <a href="/" class={path === '/' ? 'active' : ''}>Home</a>
           <a href="/collection" class={path.startsWith('/collection') || path.startsWith('/item') ? 'active' : ''}>Collection</a>
           <a href="/timeline" class={path === '/timeline' ? 'active' : ''}>Timeline</a>
+          <a href="/play" class={path === '/play' ? 'active' : ''}>Play</a>
           <a href="/about" class={path === '/about' ? 'active' : ''}>About</a>
         </nav>
       </div>
