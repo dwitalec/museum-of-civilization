@@ -1,5 +1,5 @@
 ---
-name: "Apple Watch (Original)"
+name: "Apple Watch"
 year: 2015
 era: "The Connected Era"
 tagline: "The moment computation moved from your pocket to your body."
