@@ -1,0 +1,388 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const items = await getCollection('items');
+
+// Narrative order of eras. Used to break ties when two artifacts share a year,
+// so each era's items stay grouped together (e.g. the 2010 Kinect, Digital Media
+// Era, sorts before the 2010 Droid X, Connected Era).
+const eraOrder = [
+  'The Analog Era',
+  'The Personal Computer Age',
+  'The Digital Media Era',
+  'The Connected Era',
+  'The Wireless Era',
+];
+
+const sorted = items.sort(
+  (a, b) =>
+    a.data.year - b.data.year ||
+    eraOrder.indexOf(a.data.era) - eraOrder.indexOf(b.data.era)
+);
+const firstYear = sorted[0].data.year;
+const lastYear = sorted[sorted.length - 1].data.year;
+const span = lastYear - firstYear;
+---
+
+<BaseLayout
+  title="Timeline"
+  description="A journey through time — the artifacts of the Museum of Civilization, arranged from oldest to newest."
+>
+  <div class="page">
+    <div class="page-inner">
+      <header class="page-header">
+        <p class="page-eyebrow">A Journey Through Time</p>
+        <h1>The Timeline</h1>
+        <p class="page-description">
+          {span} years of civilization, one artifact at a time. Scroll to travel
+          from {firstYear} to {lastYear} and watch the world change.
+        </p>
+      </header>
+    </div>
+
+    <ol class="timeline">
+      {sorted.map((item, i) => {
+        const showEra = i === 0 || sorted[i - 1].data.era !== item.data.era;
+        const side = i % 2 === 0 ? 'left' : 'right';
+        return (
+          <>
+            {showEra && (
+              <li class="era-marker reveal">
+                <span class="era-marker-label">{item.data.era}</span>
+              </li>
+            )}
+            <li class={`entry ${side} reveal`}>
+              <div class="entry-node" aria-hidden="true"></div>
+              <span class="entry-year">{item.data.year}</span>
+              <a class="entry-card" href={`/item/${item.id}`}>
+                {item.data.image && (
+                  <div class="entry-image">
+                    <img src={item.data.image} alt={item.data.name} loading="lazy" />
+                  </div>
+                )}
+                <div class="entry-text">
+                  <h3 class="entry-name">{item.data.name}</h3>
+                  <p class="entry-tagline">{item.data.tagline}</p>
+                  <span class="entry-link">View artifact &rarr;</span>
+                </div>
+              </a>
+            </li>
+          </>
+        );
+      })}
+      <li class="timeline-end reveal" aria-hidden="true">
+        <div class="entry-node"></div>
+        <span class="timeline-end-label">Present day</span>
+      </li>
+    </ol>
+  </div>
+</BaseLayout>
+
+<script>
+  // Progressive enhancement: reveal entries as they scroll into view.
+  // Mark JS as enabled so the hidden state only applies when we can animate it.
+  document.documentElement.classList.add('js-reveal');
+
+  const reveals = document.querySelectorAll<HTMLElement>('.reveal');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
+    );
+    reveals.forEach((el) => observer.observe(el));
+  } else {
+    reveals.forEach((el) => el.classList.add('in-view'));
+  }
+</script>
+
+<style>
+  .page {
+    padding: 4rem var(--page-padding) 2rem;
+  }
+
+  .page-inner {
+    max-width: var(--max-width);
+    margin: 0 auto;
+  }
+
+  .page-header {
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .page-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .page-header h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+  }
+
+  .page-description {
+    color: var(--color-text-muted);
+    max-width: 520px;
+    line-height: 1.8;
+  }
+
+  /* ── The spine ── */
+  .timeline {
+    list-style: none;
+    position: relative;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2rem 0 4rem;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 24px;
+    width: 2px;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      var(--color-accent-dim) 8%,
+      var(--color-accent-dim) 92%,
+      transparent
+    );
+  }
+
+  /* ── Era markers ── */
+  .era-marker {
+    position: relative;
+    padding-left: 64px;
+    margin: 2.5rem 0 1.5rem;
+  }
+
+  .era-marker-label {
+    display: inline-block;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.25rem;
+    color: var(--color-text);
+    background: var(--color-bg);
+    padding: 0.25rem 1rem 0.25rem 0;
+  }
+
+  /* ── Entries ── */
+  .entry {
+    position: relative;
+    padding-left: 64px;
+    margin-bottom: 3rem;
+  }
+
+  .entry-node {
+    position: absolute;
+    left: 19px;
+    top: 0.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px rgba(200, 169, 110, 0.15);
+  }
+
+  .entry-year {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.6rem;
+    color: var(--color-accent);
+    line-height: 1;
+    margin-bottom: 0.85rem;
+  }
+
+  .entry-card {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 1rem;
+    max-width: 460px;
+    transition: border-color 0.25s, transform 0.25s, background 0.25s;
+  }
+
+  .entry-card:hover {
+    border-color: var(--color-accent-dim);
+    background: var(--color-surface-raised);
+    transform: translateY(-3px);
+  }
+
+  .entry-image {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--color-bg);
+  }
+
+  .entry-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .entry-text {
+    min-width: 0;
+  }
+
+  .entry-name {
+    font-size: 1.05rem;
+    color: var(--color-text);
+    margin-bottom: 0.3rem;
+  }
+
+  .entry-tagline {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.6rem;
+  }
+
+  .entry-link {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .entry-card:hover .entry-link {
+    color: var(--color-text);
+  }
+
+  /* ── End cap ── */
+  .timeline-end {
+    position: relative;
+    padding-left: 64px;
+    margin-top: 1rem;
+  }
+
+  .timeline-end .entry-node {
+    background: var(--color-text);
+    box-shadow: 0 0 0 4px rgba(232, 228, 220, 0.12);
+  }
+
+  .timeline-end-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* ── Scroll-reveal (only when JS is active) ── */
+  .js-reveal .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .js-reveal .reveal.in-view {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js-reveal .reveal {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* ── Desktop: alternating sides ── */
+  @media (min-width: 820px) {
+    .timeline::before {
+      left: 50%;
+    }
+
+    .era-marker {
+      padding-left: 0;
+      text-align: center;
+      margin: 3.5rem 0 2rem;
+    }
+
+    .era-marker-label {
+      background: var(--color-bg);
+      padding: 0.25rem 1.25rem;
+    }
+
+    .entry {
+      width: 50%;
+      padding-left: 0;
+      margin-bottom: 3.5rem;
+    }
+
+    .entry.left {
+      padding-right: 48px;
+      text-align: right;
+    }
+
+    .entry.right {
+      margin-left: 50%;
+      padding-left: 48px;
+    }
+
+    .entry.left .entry-node {
+      left: auto;
+      right: -6px;
+    }
+
+    .entry.right .entry-node {
+      left: -6px;
+    }
+
+    .entry.left .entry-card {
+      margin-left: auto;
+      flex-direction: row-reverse;
+      text-align: left;
+    }
+
+    /* Nudge alternating entries in from opposite sides on reveal */
+    .js-reveal .entry.left.reveal {
+      transform: translateX(28px);
+    }
+    .js-reveal .entry.right.reveal {
+      transform: translateX(-28px);
+    }
+    .js-reveal .entry.reveal.in-view {
+      transform: none;
+    }
+
+    .timeline-end {
+      width: 100%;
+      padding-left: 0;
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .timeline-end .entry-node {
+      position: relative;
+      left: auto;
+      display: inline-block;
+      top: 0;
+      margin-bottom: 0.6rem;
+    }
+
+    .timeline-end-label {
+      display: block;
+    }
+  }
+</style>
