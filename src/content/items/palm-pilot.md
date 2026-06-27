@@ -3,6 +3,7 @@ name: "PalmPilot"
 year: 1996
 era: "The Digital Media Era"
 tagline: "The first computer that fit in your shirt pocket."
+featured: true
 image: /images/PalmPilot1.JPG
 
 historicalContext: "The PalmPilot, introduced by Palm Computing in 1996, was the device that made personal digital assistants practical for everyday people. Earlier PDAs had failed by trying to replace a laptop; Palm succeeded by doing less — contacts, calendar, notes, and a to-do list — but doing it instantly and reliably. It introduced Graffiti, a simplified handwriting input system, and its HotSync cradle made syncing with a desktop PC seamless. The PalmPilot sold over a million units in its first year and established the template that every smartphone would eventually follow: a pocket-sized personal computer built around your daily life, not your desk."

@@ -3,6 +3,7 @@ name: "Motorola Droid X"
 year: 2010
 era: "The Connected Era"
 tagline: "The phone that proved Android could win."
+featured: true
 image: /images/DroidX1.JPG
 
 historicalContext: "Launched exclusively on Verizon in July 2010, the Motorola Droid X arrived at the height of the iPhone vs. Android wars. Where the original Motorola Droid had a physical keyboard, the Droid X went all-screen — a massive 4.3-inch display at a time when most phones topped out at 3.5 inches. It ran Android 2.1 with an 8-megapixel camera and HDMI output, and it became one of the best-selling Android phones of its year. The Droid X mattered not just as hardware, but as a signal: Verizon's 'Droid Does' marketing campaign was a direct attack on the iPhone's limitations, and it worked. The phone helped establish Android as a credible platform, accelerated the shift to large-screen smartphones, and gave millions of users their first taste of the open, customizable mobile world that would define the next decade."

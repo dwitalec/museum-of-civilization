@@ -9,6 +9,7 @@ const items = defineCollection({
     era: z.string(),
     tagline: z.string(),
     image: z.string().optional(),
+    featured: z.boolean().optional(),
     historicalContext: z.string(),
     personalStory: z.string(),
   }),

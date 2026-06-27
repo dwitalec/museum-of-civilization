@@ -5,7 +5,7 @@ import { getCollection } from 'astro:content';
 
 const items = await getCollection('items');
 const sorted = items.sort((a, b) => a.data.year - b.data.year);
-const featured = sorted.slice(0, 3);
+const featured = sorted.filter(i => i.data.featured);
 ---
 
 <BaseLayout title="Home">
