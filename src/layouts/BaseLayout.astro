@@ -39,7 +39,26 @@ const path = Astro.url.pathname;
 
     <footer class="site-footer">
       <div class="footer-inner">
-        <p>Museum of Civilization &mdash; A personal archive of objects that marked turning points in civilization.</p>
+        <div class="footer-col footer-nav">
+          <span class="footer-heading">Explore</span>
+          <nav>
+            <a href="/collection">Collection</a>
+            <a href="/timeline">Timeline</a>
+            <a href="/play">Play</a>
+            <a href="/about">About</a>
+          </nav>
+        </div>
+        <div class="footer-col footer-brand">
+          <a href="/" class="footer-wordmark">Museum of Civilization</a>
+          <p class="footer-tagline">The world changed. These are objects that changed mine.</p>
+        </div>
+        <div class="footer-col footer-meta">
+          <span class="footer-heading">Est. 2026</span>
+          <p>A personal archive assembled while civilization is still running.</p>
+        </div>
+      </div>
+      <div class="footer-base">
+        <p>&copy; {new Date().getFullYear()} Museum of Civilization</p>
       </div>
     </footer>
   </body>
@@ -100,15 +119,112 @@ const path = Astro.url.pathname;
 
   .site-footer {
     border-top: 1px solid var(--color-border);
-    padding: 2rem var(--page-padding);
     margin-top: 6rem;
+    background: var(--color-surface);
   }
 
   .footer-inner {
     max-width: var(--max-width);
     margin: 0 auto;
+    padding: 3.5rem var(--page-padding) 2.5rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 2rem;
+  }
+
+  .footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .footer-heading {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  /* Nav column */
+  .footer-nav nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .footer-nav a {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+
+  .footer-nav a:hover {
+    color: var(--color-accent);
+  }
+
+  /* Brand column */
+  .footer-brand {
+    align-items: center;
     text-align: center;
+  }
+
+  .footer-wordmark {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--color-text);
+    letter-spacing: 0.03em;
+  }
+
+  .footer-wordmark:hover {
+    color: var(--color-accent);
+  }
+
+  .footer-tagline {
     font-size: 0.8rem;
     color: var(--color-text-muted);
+    line-height: 1.7;
+    font-style: italic;
+    max-width: 280px;
+  }
+
+  /* Meta column */
+  .footer-meta {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .footer-meta p {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.7;
+  }
+
+  /* Bottom strip */
+  .footer-base {
+    border-top: 1px solid var(--color-border);
+    padding: 1rem var(--page-padding);
+    text-align: center;
+  }
+
+  .footer-base p {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 700px) {
+    .footer-inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .footer-brand,
+    .footer-meta {
+      align-items: center;
+      text-align: center;
+    }
+
+    .footer-nav nav {
+      align-items: center;
+    }
   }
 </style>
