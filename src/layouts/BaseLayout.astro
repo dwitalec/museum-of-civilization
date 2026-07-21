@@ -117,6 +117,14 @@ const path = Astro.url.pathname;
     color: var(--color-accent);
   }
 
+  @media (max-width: 700px) {
+    .site-nav {
+      gap: 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+    }
+  }
+
   .site-footer {
     border-top: 1px solid var(--color-border);
     margin-top: 6rem;
