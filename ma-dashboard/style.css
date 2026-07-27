@@ -50,6 +50,9 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  /* Stops iOS from inflating text when the iPad is rotated to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ---------------- Ambient background blobs ---------------- */
@@ -158,12 +161,14 @@ body {
   background: rgba(255,255,255,0.04);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 9px 14px;
+  padding: 12px 15px;
+  min-height: 44px; /* Apple HIG minimum touch target */
   cursor: pointer;
   font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 8px;
+  touch-action: manipulation;
   transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.2s var(--ease);
 }
 
@@ -423,7 +428,10 @@ body {
 .field input[type="text"],
 .field input[type="number"] {
   font: inherit;
-  padding: 10px 12px;
+  /* iOS Safari auto-zooms the page when a focused field is under 16px. */
+  font-size: 16px;
+  padding: 12px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.06);
@@ -475,33 +483,57 @@ body {
   font-size: 0.85rem;
 }
 
+/* The input itself is a tall, transparent hit area (44px, per Apple's touch
+   target guidance) so it is comfortable to drag with a finger on iPad. The
+   thin visual track is drawn by the ::track pseudo-elements instead. */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
+  min-width: 0;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+input[type="range"]:focus-visible { outline: 2px solid var(--pg-sky); outline-offset: 4px; }
+
+/* --- Track: WebKit / Blink (Safari, Chrome, Edge) --- */
+input[type="range"]::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 100px;
   background: linear-gradient(to right, var(--pg-sky) var(--val, 50%), rgba(255,255,255,0.15) var(--val, 50%));
-  cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: var(--white);
   border: 3px solid var(--pg-sky);
   box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  /* Centres the 22px thumb on the 6px track: (6 - 22) / 2 */
+  margin-top: -8px;
   transition: transform 0.15s var(--ease);
 }
 
-input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+/* --- Track: Firefox --- */
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 100px;
+  background: linear-gradient(to right, var(--pg-sky) var(--val, 50%), rgba(255,255,255,0.15) var(--val, 50%));
+}
 
 input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
   border-radius: 50%;
   background: var(--white);
   border: 3px solid var(--pg-sky);
@@ -533,7 +565,9 @@ input[type="range"]::-moz-range-thumb {
   font: inherit;
   font-weight: 600;
   font-size: 0.88rem;
-  padding: 11px 20px;
+  padding: 13px 20px;
+  min-height: 44px; /* Apple HIG minimum touch target */
+  touch-action: manipulation;
   border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
@@ -608,7 +642,8 @@ input[type="range"]::-moz-range-thumb {
 #premortemReasons {
   width: 100%;
   font: inherit;
-  font-size: 0.9rem;
+  /* 16px keeps iOS Safari from zooming the page when this field is focused. */
+  font-size: 16px;
   padding: 14px;
   border-radius: var(--radius-sm);
   border: 1px solid rgba(255,255,255,0.18);

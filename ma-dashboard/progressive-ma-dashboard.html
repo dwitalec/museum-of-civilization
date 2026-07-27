@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Progressive | M&amp;A Evaluation Dashboard</title>
+<style>
+/* =========================================================================
+   Progressive M&A Evaluation Dashboard
+   Palette: Progressive Blue / Slate Grey / White, glassmorphism + micro-animations
+   ========================================================================= */
+
+/* Progressive brand palette:
+   Progressive Blue #0033A0 (primary), White, Slate Grey (secondary),
+   with Progressive's bright "Sky" blue #00A3E0 used sparingly as accent. */
+:root {
+  --pg-blue: #0033a0;
+  --pg-sky: #00a3e0;
+  --navy-950: #001233;
+  --navy-900: #002169;
+  --navy-800: #0033a0;
+  --navy-700: #0a45b8;
+  --slate-600: #55606e;
+  --slate-400: #8b95a5;
+  --slate-200: #ccd3dd;
+  --white: #f8fafc;
+  --white-soft: #ffffff;
+
+  --risk-low: #2e9e6b;
+  --risk-mid: #d9a441;
+  --risk-high: #c8503f;
+
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-bg-strong: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px rgba(6, 14, 31, 0.35);
+
+  --radius-lg: 20px;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--white);
+  background: linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 45%, var(--navy-800) 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  /* Stops iOS from inflating text when the iPad is rotated to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ---------------- Ambient background blobs ---------------- */
+.bg-decor {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.35;
+  animation: drift 22s ease-in-out infinite alternate;
+}
+
+.blob-1 {
+  width: 520px;
+  height: 520px;
+  background: var(--navy-700);
+  top: -160px;
+  left: -120px;
+}
+
+.blob-2 {
+  width: 420px;
+  height: 420px;
+  background: var(--slate-600);
+  bottom: -140px;
+  right: -100px;
+  animation-duration: 28s;
+  animation-delay: -6s;
+}
+
+.blob-3 {
+  width: 320px;
+  height: 320px;
+  background: var(--pg-sky);
+  top: 40%;
+  left: 55%;
+  animation-duration: 34s;
+  animation-delay: -12s;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(60px, 40px) scale(1.12); }
+}
+
+/* ---------------- Glassmorphism base ---------------- */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* ---------------- Layout shell ---------------- */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  margin: 16px;
+  padding: 14px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-radius: var(--radius-lg);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--navy-700), var(--slate-600));
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+}
+
+.brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+.brand-text strong { font-size: 1.05rem; }
+.brand-text span { font-size: 0.8rem; color: var(--slate-200); }
+
+.tab-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  font: inherit;
+  color: var(--white);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+  min-height: 44px; /* Apple HIG minimum touch target */
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  touch-action: manipulation;
+  transition: background 0.25s var(--ease), border-color 0.25s var(--ease), transform 0.2s var(--ease);
+}
+
+.tab-btn:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  background: var(--glass-bg-strong);
+  border-color: var(--glass-border);
+}
+
+.tab-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--slate-600);
+  font-size: 0.7rem;
+}
+
+.tab-btn.active .tab-num { background: var(--pg-sky); }
+
+.app-main {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 8px 16px 60px;
+}
+
+/* ---------------- Panels (section switching) ---------------- */
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+  animation: fadeSlideIn 0.5s var(--ease);
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.panel-intro {
+  padding: 26px 28px;
+  margin: 18px 0 28px;
+}
+
+.panel-intro h1 {
+  margin: 0 0 8px;
+  font-size: 1.7rem;
+  letter-spacing: -0.02em;
+}
+
+.panel-intro p {
+  margin: 0;
+  color: var(--slate-200);
+  line-height: 1.55;
+  max-width: 900px;
+}
+
+.advantage-statement {
+  border-left: 3px solid var(--pg-sky);
+  padding-left: 16px;
+  margin-bottom: 14px !important;
+}
+
+.advantage-tag {
+  display: block;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--pg-sky);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.section-heading {
+  font-size: 1.2rem;
+  margin: 36px 0 6px;
+  letter-spacing: -0.01em;
+}
+
+.section-subtext {
+  color: var(--slate-200);
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+}
+
+/* ---------------- Archetype cards ---------------- */
+.archetype-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 16px;
+}
+
+.archetype-card {
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), background 0.3s var(--ease);
+}
+
+.archetype-card:hover {
+  transform: translateY(-5px);
+  background: var(--glass-bg-strong);
+  box-shadow: 0 16px 40px rgba(6, 14, 31, 0.45);
+}
+
+.archetype-index {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  font-size: 2rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.08);
+}
+
+.archetype-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: #dfe7f2;
+}
+
+.archetype-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--slate-200);
+  line-height: 1.5;
+}
+
+/* ---------------- Portfolio map ---------------- */
+.portfolio-wrapper {
+  padding: 24px;
+}
+
+.portfolio-plot {
+  position: relative;
+  height: 320px;
+  border-radius: var(--radius-md);
+  background: rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.plot-gridlines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(to right, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 12.5%),
+    repeating-linear-gradient(to bottom, rgba(255,255,255,0.06) 0, rgba(255,255,255,0.06) 1px, transparent 1px, transparent 20%);
+}
+
+.plot-axis-label {
+  position: absolute;
+  font-size: 0.7rem;
+  color: var(--slate-200);
+  z-index: 2;
+}
+
+.plot-axis-y {
+  top: 8px;
+  left: 8px;
+}
+
+.plot-axis-x {
+  bottom: 6px;
+  right: 12px;
+}
+
+.deal-bubble {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  border: 2px solid rgba(255,255,255,0.7);
+  cursor: pointer;
+  transition: transform 0.25s var(--ease);
+  animation: popIn 0.4s var(--ease);
+}
+
+.deal-bubble:hover { transform: translate(-50%, 50%) scale(1.35); }
+
+@keyframes popIn {
+  from { opacity: 0; transform: translate(-50%, 50%) scale(0); }
+  to   { opacity: 1; transform: translate(-50%, 50%) scale(1); }
+}
+
+.portfolio-empty {
+  text-align: center;
+  color: var(--slate-200);
+  padding: 12px;
+  font-size: 0.9rem;
+}
+
+.portfolio-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.portfolio-item {
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.portfolio-item .pi-name { font-weight: 600; }
+.portfolio-item .pi-meta { color: var(--slate-200); font-size: 0.78rem; }
+
+.portfolio-item .pi-verdict {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ---------------- Forms ---------------- */
+.form-card {
+  padding: 28px 30px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--slate-200);
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+  font: inherit;
+  /* iOS Safari auto-zooms the page when a focused field is under 16px. */
+  font-size: 16px;
+  padding: 12px;
+  min-height: 44px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--pg-sky);
+  background: rgba(255,255,255,0.1);
+}
+
+.form-section-title {
+  margin: 8px 0 4px;
+  font-size: 1.05rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 20px;
+}
+
+.slider-field {
+  margin-bottom: 20px;
+}
+
+.slider-field label {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--slate-200);
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+
+.slider-field label strong { color: var(--white); }
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.slider-row output {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255,255,255,0.08);
+  border-radius: 100px;
+  padding: 3px 8px;
+  font-size: 0.85rem;
+}
+
+/* The input itself is a tall, transparent hit area (44px, per Apple's touch
+   target guidance) so it is comfortable to drag with a finger on iPad. The
+   thin visual track is drawn by the ::track pseudo-elements instead. */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+input[type="range"]:focus-visible { outline: 2px solid var(--pg-sky); outline-offset: 4px; }
+
+/* --- Track: WebKit / Blink (Safari, Chrome, Edge) --- */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 100px;
+  background: linear-gradient(to right, var(--pg-sky) var(--val, 50%), rgba(255,255,255,0.15) var(--val, 50%));
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--pg-sky);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  /* Centres the 22px thumb on the 6px track: (6 - 22) / 2 */
+  margin-top: -8px;
+  transition: transform 0.15s var(--ease);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.12); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.2); }
+
+/* --- Track: Firefox --- */
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 100px;
+  background: linear-gradient(to right, var(--pg-sky) var(--val, 50%), rgba(255,255,255,0.15) var(--val, 50%));
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: var(--white);
+  border: 3px solid var(--pg-sky);
+  cursor: pointer;
+}
+
+.pestle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 6px 26px;
+}
+
+/* Keeps the six PESTLE sliders on a shared baseline even when labels wrap. */
+.pestle-grid .slider-field label { min-height: 2.7em; }
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 22px;
+}
+
+.form-actions .validation-msg { margin: 0; }
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 13px 20px;
+  min-height: 44px; /* Apple HIG minimum touch target */
+  touch-action: manipulation;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--pg-sky), var(--navy-700));
+  color: var(--white);
+  box-shadow: 0 6px 18px rgba(43, 94, 168, 0.4);
+}
+
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(43, 94, 168, 0.55); }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.08);
+  color: var(--white);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--slate-200);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.btn-ghost:hover { color: var(--white); border-color: rgba(255,255,255,0.35); }
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ---------------- Pre-mortem simulator ---------------- */
+.warning-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(200, 80, 63, 0.45);
+  background: linear-gradient(135deg, rgba(200,80,63,0.16), rgba(255,255,255,0.06));
+  animation: warnPulse 3.2s ease-in-out infinite;
+}
+
+@keyframes warnPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(200, 80, 63, 0); }
+  50% { box-shadow: 0 0 32px rgba(200, 80, 63, 0.25); }
+}
+
+.warning-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.warning-card p { margin: 0; line-height: 1.6; }
+
+.pre-mortem-label {
+  display: block;
+  margin-bottom: 12px;
+  line-height: 1.55;
+  color: var(--slate-200);
+}
+
+.pre-mortem-label strong { color: var(--white); }
+
+#premortemReasons {
+  width: 100%;
+  font: inherit;
+  /* 16px keeps iOS Safari from zooming the page when this field is focused. */
+  font-size: 16px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+  color: var(--white);
+  resize: vertical;
+  line-height: 1.6;
+}
+
+#premortemReasons:focus {
+  outline: none;
+  border-color: var(--pg-sky);
+  background: rgba(255,255,255,0.1);
+}
+
+.validation-msg {
+  margin: 8px 0 4px;
+  font-size: 0.82rem;
+  min-height: 1.2em;
+  color: var(--risk-mid);
+}
+
+.validation-msg.ok { color: var(--risk-low); }
+.validation-msg.error { color: var(--risk-high); }
+
+.confidence-slider { margin-top: 22px; }
+
+/* ---------------- Executive synthesis report ---------------- */
+.report-card {
+  padding: 30px 34px;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+}
+
+.report-header h2 { margin: 0 0 4px; font-size: 1.5rem; }
+
+.report-price {
+  color: var(--slate-200);
+  font-size: 0.95rem;
+}
+
+.score-gauge {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.gauge-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+.gauge-track {
+  fill: none;
+  stroke: rgba(255,255,255,0.12);
+  stroke-width: 10;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke: var(--pg-sky);
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 327;
+  stroke-dashoffset: 327;
+  transition: stroke-dashoffset 1s var(--ease), stroke 0.6s var(--ease);
+}
+
+.gauge-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  line-height: 1;
+}
+
+
+.gauge-label span { font-size: 1.9rem; font-weight: 700; }
+.gauge-label small {
+  color: var(--slate-200);
+  font-size: 0.8rem;
+  transform: translateY(5px);
+}
+
+.verdict-banner {
+  text-align: center;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 26px;
+  transition: background 0.4s var(--ease), color 0.4s var(--ease);
+  background: rgba(255,255,255,0.08);
+}
+
+.verdict-banner.proceed { background: rgba(46, 158, 107, 0.22); color: #7be0ae; }
+.verdict-banner.review   { background: rgba(217, 164, 65, 0.22); color: #ffd27a; }
+.verdict-banner.reject   { background: rgba(200, 80, 63, 0.22); color: #ff9d8e; }
+
+.report-subheading {
+  font-size: 1rem;
+  margin: 22px 0 12px;
+  color: var(--slate-200);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.risk-bars { display: flex; flex-direction: column; gap: 10px; }
+
+.risk-bar-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 40px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+
+.risk-bar-track {
+  height: 10px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+}
+
+.risk-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  width: 0%;
+  transition: width 1s var(--ease), background 0.4s var(--ease);
+}
+
+.reasons-list {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.7;
+  color: var(--slate-200);
+}
+
+/* ---------------- Footer ---------------- */
+.app-footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--slate-400);
+  font-size: 0.78rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 720px) {
+  .field-row { grid-template-columns: 1fr; }
+  .report-header { flex-direction: column; align-items: flex-start; }
+  .risk-bar-row { grid-template-columns: 90px 1fr 34px; font-size: 0.78rem; }
+}
+
+/* Print-only content is hidden on screen and revealed by the print media query. */
+.print-only { display: none; }
+
+/* ---------------- Print styles ---------------- */
+@media print {
+  body { background: var(--white); color: #111; }
+  .bg-decor, .app-header, .app-footer, .no-print { display: none !important; }
+
+  .print-only { display: block; }
+
+  .print-letterhead {
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pg-blue) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--pg-blue);
+    padding-bottom: 8px;
+    margin-bottom: 18px;
+  }
+
+  .report-subheading { color: #444 !important; }
+  .gauge-track { stroke: #dde2e9 !important; }
+  .panel { display: none !important; }
+  #executive-synthesis.panel-print-force { display: block !important; }
+  .glass, .report-card {
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border: 1px solid #ccc !important;
+    color: #111 !important;
+  }
+  .report-price, .section-subtext, .reasons-list { color: #333 !important; }
+  .verdict-banner.proceed { background: #e4f6ec !important; color: #1c7a4c !important; }
+  .verdict-banner.review   { background: #fdf3e0 !important; color: #8a5b12 !important; }
+  .verdict-banner.reject   { background: #fbe7e4 !important; color: #96311f !important; }
+}
+
+</style>
+</head>
+<body>
+
+  <!-- Decorative ambient background blobs (pure CSS, purely visual) -->
+  <div class="bg-decor" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="app-header glass">
+    <div class="brand">
+      <span class="brand-mark">PG</span>
+      <div class="brand-text">
+        <strong>Progressive Insurance</strong>
+        <span>M&amp;A Evaluation Dashboard</span>
+      </div>
+    </div>
+
+    <nav class="tab-nav" role="tablist" aria-label="Dashboard sections">
+      <button class="tab-btn active" data-target="strategic-map" role="tab" aria-selected="true">
+        <span class="tab-num">1</span> Strategic Map
+      </button>
+      <button class="tab-btn" data-target="evaluation-engine" role="tab" aria-selected="false">
+        <span class="tab-num">2</span> Evaluation Engine
+      </button>
+      <button class="tab-btn" data-target="pre-mortem" role="tab" aria-selected="false">
+        <span class="tab-num">3</span> Pre-Mortem Simulator
+      </button>
+      <button class="tab-btn" data-target="executive-synthesis" role="tab" aria-selected="false">
+        <span class="tab-num">4</span> Executive Synthesis
+      </button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ======================================================= -->
+    <!-- SECTION 1: STRATEGIC MAP (HOME SCREEN)                   -->
+    <!-- ======================================================= -->
+    <section id="strategic-map" class="panel active">
+
+      <div class="panel-intro glass">
+        <h1>The Strategic Map</h1>
+        <p class="advantage-statement">
+          <span class="advantage-tag">Our Core Strategic Advantage</span>
+          Decades of proprietary driver data and Snapshot telematics give us the industry's sharpest
+          risk segmentation &mdash; we price micro-segments competitors have to price as averages.
+          That edge is amplified by a dual distribution engine (direct-to-consumer at scale plus a deep
+          independent-agent network) and a culture that holds every book to underwriting profit,
+          not premium growth.
+        </p>
+        <p>
+          Every acquisition candidate must be weighed against the eight ways M&amp;A destroys value
+          &mdash; before it destroys ours.
+        </p>
+      </div>
+
+      <h2 class="section-heading">The 8 M&amp;A Failure Archetypes</h2>
+      <div class="archetype-grid">
+        <!-- Each card below is a self-contained failure mode. Data lives in HTML so it can be
+             skimmed at a glance, but interactive states (hover flip) are handled in CSS. -->
+        <article class="archetype-card glass" data-archetype="liability">
+          <span class="archetype-index">01</span>
+          <h3>Liability Underwriting</h3>
+          <p>Underestimating hidden claims reserves, IBNR gaps, or regulatory exposure baked into the target's back book.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="perpetuity">
+          <span class="archetype-index">02</span>
+          <h3>Perpetuity Error</h3>
+          <p>Assuming today's loss ratios, retention, and combined ratio trends continue forever, uncorrected by cycle.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="peak">
+          <span class="archetype-index">03</span>
+          <h3>Peak Extrapolation</h3>
+          <p>Valuing the target off a cyclical high &mdash; soft pricing, low cat losses &mdash; that will not persist.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="structure">
+          <span class="archetype-index">04</span>
+          <h3>Structure Unchanged</h3>
+          <p>Assuming distribution, agent relationships, and state filings hold static post-close.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="policy-bet">
+          <span class="archetype-index">05</span>
+          <h3>Policy Bet</h3>
+          <p>Betting the entire thesis on one product line, state, or regulatory ruling instead of a resilient book.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="substitution">
+          <span class="archetype-index">06</span>
+          <h3>Substitution Blindness</h3>
+          <p>Missing that InsurTechs, telematics-first entrants, or embedded insurance can substitute the offering entirely.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="capability">
+          <span class="archetype-index">07</span>
+          <h3>Capability Illusion</h3>
+          <p>Believing the target's underwriting and claims talent, data, and models transfer cleanly into our systems.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="closing">
+          <span class="archetype-index">08</span>
+          <h3>Closing Risk</h3>
+          <p>State DOI approval delays, rate-filing freezes, or integration slippage erode value before the deal ever closes.</p>
+        </article>
+      </div>
+
+      <h2 class="section-heading">Deal Portfolio Map</h2>
+      <p class="section-subtext">Every evaluation you complete and save is plotted here &mdash; price vs. viability score.</p>
+      <div class="portfolio-wrapper glass">
+        <div id="portfolioPlot" class="portfolio-plot">
+          <div class="plot-axis-label plot-axis-y">Deal Viability Score</div>
+          <div class="plot-axis-label plot-axis-x">Estimated Price ($M)</div>
+          <div class="plot-gridlines"></div>
+          <!-- deal bubbles injected by JS -->
+        </div>
+        <div id="portfolioEmpty" class="portfolio-empty">No deals evaluated yet. Head to the Evaluation Engine to begin.</div>
+        <div id="portfolioList" class="portfolio-list"></div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 2: THE EVALUATION ENGINE (INPUT FORM)            -->
+    <!-- ======================================================= -->
+    <section id="evaluation-engine" class="panel">
+
+      <div class="panel-intro glass">
+        <h1>The Evaluation Engine</h1>
+        <p>Score the target against our strategic fundamentals and the macro friction acting on the P&amp;C insurance sector.</p>
+      </div>
+
+      <form id="evaluationForm" class="glass form-card">
+
+        <div class="field-row">
+          <div class="field">
+            <label for="targetName">Target Company Name</label>
+            <input type="text" id="targetName" placeholder="e.g. Apex Regional Insurers" required />
+          </div>
+          <div class="field">
+            <label for="targetPrice">Estimated Purchase Price ($M)</label>
+            <input type="number" id="targetPrice" min="0" step="1" placeholder="e.g. 850" required />
+          </div>
+        </div>
+
+        <h2 class="form-section-title">The 4 Basic Questions</h2>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-core">
+            <strong>Core Competency</strong> &mdash; Does this target enhance our proprietary
+            data-driven risk segmentation (Snapshot telematics), our dual direct + independent-agent
+            distribution engine, and our underwriting-profit discipline?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-core" min="0" max="10" step="1" value="5" />
+            <output for="q-core">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-competition">
+            <strong>Competition</strong> &mdash; Does this counter primary competitors like
+            GEICO, State Farm, and Allstate?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-competition" min="0" max="10" step="1" value="5" />
+            <output for="q-competition">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-data">
+            <strong>Fascinating Data</strong> &mdash; Do the data anomalies (loss ratios, retention
+            curves, claims severity trends) support this move?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-data" min="0" max="10" step="1" value="5" />
+            <output for="q-data">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-patterns">
+            <strong>Patterns</strong> &mdash; Are we buying at the right point in the P&amp;C
+            insurance underwriting cycle (hard vs. soft market)?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-patterns" min="0" max="10" step="1" value="5" />
+            <output for="q-patterns">5</output>
+          </div>
+        </div>
+
+        <h2 class="form-section-title">PESTLE &amp; VUCA Macro Friction</h2>
+        <p class="section-subtext">Rate the level of risk / friction (0 = negligible, 10 = severe) specific to the P&amp;C insurance sector.</p>
+
+        <div class="pestle-grid">
+          <div class="slider-field" data-weight="friction">
+            <label for="p-political"><strong>Political</strong> &mdash; State DOI leadership &amp; rate-approval climate</label>
+            <div class="slider-row">
+              <input type="range" id="p-political" min="0" max="10" step="1" value="5" />
+              <output for="p-political">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-economic"><strong>Economic</strong> &mdash; Inflation, rates, and repair/replacement cost trends</label>
+            <div class="slider-row">
+              <input type="range" id="p-economic" min="0" max="10" step="1" value="5" />
+              <output for="p-economic">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-social"><strong>Social</strong> &mdash; Channel preference shifts &amp; trust in usage-based monitoring</label>
+            <div class="slider-row">
+              <input type="range" id="p-social" min="0" max="10" step="1" value="5" />
+              <output for="p-social">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-technological"><strong>Technological</strong> &mdash; Telematics, AI claims automation &amp; InsurTech disruption pace</label>
+            <div class="slider-row">
+              <input type="range" id="p-technological" min="0" max="10" step="1" value="5" />
+              <output for="p-technological">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-legal"><strong>Legal</strong> &mdash; Litigation trends, tort reform &amp; social inflation</label>
+            <div class="slider-row">
+              <input type="range" id="p-legal" min="0" max="10" step="1" value="5" />
+              <output for="p-legal">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-environmental"><strong>Environmental</strong> &mdash; Catastrophe &amp; climate exposure (hurricane, wildfire, flood)</label>
+            <div class="slider-row">
+              <input type="range" id="p-environmental" min="0" max="10" step="1" value="5" />
+              <output for="p-environmental">5</output>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" id="toPreMortemBtn">Continue to Pre-Mortem Simulator &rarr;</button>
+          <div id="evalValidation" class="validation-msg"></div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 3: THE PRE-MORTEM SIMULATOR                      -->
+    <!-- ======================================================= -->
+    <section id="pre-mortem" class="panel">
+
+      <div class="panel-intro glass">
+        <h1>The Pre-Mortem Simulator</h1>
+      </div>
+
+      <div class="warning-card glass">
+        <div class="warning-icon">&#9888;</div>
+        <p>
+          Assume it is <strong>three years from today</strong> and the acquisition of
+          <strong><span id="premortemTargetName">this target</span></strong> has been an
+          <strong>unmitigated disaster</strong>, destroying massive shareholder value.
+        </p>
+      </div>
+
+      <div class="form-card glass">
+        <label for="premortemReasons" class="pre-mortem-label">
+          List at least <strong>3 reasons</strong> the deal failed. Specifically hunt for
+          <strong>Capability Illusions</strong> (talent/systems that didn't transfer) or
+          <strong>Substitution Blindness</strong> (an InsurTech, telematics-first player, or
+          embedded-insurance channel that made the target's offering obsolete). One reason per line.
+        </label>
+        <textarea id="premortemReasons" rows="8" placeholder="1. Our claims platform couldn't absorb their legacy policy admin system...&#10;2. A telematics-first InsurTech undercut the target's core book within 18 months...&#10;3. Their top underwriting talent left within the first year, taking tribal risk knowledge with them..."></textarea>
+        <div id="premortemValidation" class="validation-msg"></div>
+
+        <div class="slider-field confidence-slider">
+          <label for="confidenceSlider">
+            <strong>Mitigation Confidence</strong> &mdash; How confident are we, today, in mitigating these
+            specific future risks?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="confidenceSlider" min="0" max="10" step="1" value="5" />
+            <output for="confidenceSlider">5</output>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="backToEvalBtn">&larr; Back</button>
+          <button type="button" class="btn btn-primary" id="toSynthesisBtn">Generate Executive Synthesis &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 4: THE EXECUTIVE SYNTHESIS REPORT                -->
+    <!-- ======================================================= -->
+    <section id="executive-synthesis" class="panel">
+
+      <div class="panel-intro glass no-print">
+        <h1>The Executive Synthesis Report</h1>
+        <p>A printable, board-ready summary of the deal's viability.</p>
+      </div>
+
+      <div id="synthesisReport" class="glass report-card">
+        <!-- Only rendered on paper: the app chrome is hidden when printing. -->
+        <div class="print-only print-letterhead">
+          Progressive Insurance &middot; M&amp;A Evaluation Dashboard &middot; Confidential
+        </div>
+        <div class="report-header">
+          <div>
+            <h2 id="reportTargetName">Target Name</h2>
+            <span id="reportPrice" class="report-price">$0M Estimated Price</span>
+          </div>
+          <div class="score-gauge">
+            <svg viewBox="0 0 120 120" class="gauge-svg">
+              <circle cx="60" cy="60" r="52" class="gauge-track"></circle>
+              <circle cx="60" cy="60" r="52" class="gauge-fill" id="gaugeFill"></circle>
+            </svg>
+            <div class="gauge-label">
+              <span id="gaugeScore">0</span>
+              <small>/ 100</small>
+            </div>
+          </div>
+        </div>
+
+        <div id="verdictBanner" class="verdict-banner">
+          <span id="verdictText">PENDING</span>
+        </div>
+
+        <h3 class="report-subheading">Risk &amp; Friction Breakdown</h3>
+        <div id="riskBars" class="risk-bars"></div>
+
+        <h3 class="report-subheading">Pre-Mortem Findings</h3>
+        <ul id="reportReasons" class="reasons-list"></ul>
+
+        <div class="form-actions no-print">
+          <button type="button" class="btn btn-secondary" id="backToPreMortemBtn">&larr; Back</button>
+          <button type="button" class="btn btn-secondary" id="printBtn">Print Report</button>
+          <button type="button" class="btn btn-primary" id="saveDealBtn">Save to Portfolio Map</button>
+          <button type="button" class="btn btn-ghost" id="newEvalBtn">Start New Evaluation</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="app-footer no-print">
+    <p>Progressive Insurance &middot; Internal Strategy Tool &middot; Client-side only, no data leaves this browser.</p>
+  </footer>
+
+  <script>
+/* =========================================================================
+   Progressive M&A Evaluation Dashboard — main.js
+   Pure vanilla JS. No build step, no backend. State lives in memory + a
+   localStorage-backed "portfolio" of saved deals.
+   ========================================================================= */
+
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------------------
+     Shared state for the deal currently being evaluated.
+     --------------------------------------------------------------------- */
+  const currentDeal = {
+    name: '',
+    price: 0,
+    basics: { core: 5, competition: 5, data: 5, patterns: 5 },
+    pestle: { political: 5, economic: 5, social: 5, technological: 5, legal: 5, environmental: 5 },
+    reasons: [],
+    confidence: 5,
+    score: 0,
+    verdict: 'PENDING'
+  };
+
+  const PORTFOLIO_KEY = 'pg_ma_portfolio_v1';
+
+  /* =======================================================================
+     1. TAB NAVIGATION
+     ======================================================================= */
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.panel');
+
+  function showPanel(targetId) {
+    panels.forEach((p) => p.classList.toggle('active', p.id === targetId));
+    tabButtons.forEach((b) => {
+      const isActive = b.dataset.target === targetId;
+      b.classList.toggle('active', isActive);
+      b.setAttribute('aria-selected', String(isActive));
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener('click', () => showPanel(btn.dataset.target));
+  });
+
+  // Wire up the in-flow "Continue / Back" buttons to the same navigation.
+  document.getElementById('toPreMortemBtn').addEventListener('click', () => {
+    if (!validateEvaluationForm()) return;
+    syncEvaluationState();
+    document.getElementById('premortemTargetName').textContent = currentDeal.name || 'this target';
+    showPanel('pre-mortem');
+  });
+
+  document.getElementById('backToEvalBtn').addEventListener('click', () => showPanel('evaluation-engine'));
+  document.getElementById('backToPreMortemBtn').addEventListener('click', () => showPanel('pre-mortem'));
+
+  document.getElementById('toSynthesisBtn').addEventListener('click', () => {
+    if (!validatePreMortem()) return;
+    syncPreMortemState();
+    calculateDealViabilityScore();
+    renderSynthesisReport();
+    showPanel('executive-synthesis');
+  });
+
+  document.getElementById('newEvalBtn').addEventListener('click', resetEvaluation);
+
+  /* =======================================================================
+     2. LIVE SLIDER VALUE DISPLAY
+     Every <input type="range"> is paired with an <output for="..."> element.
+     We keep the output text and the track's fill (--val custom property)
+     in sync on every input event.
+     ======================================================================= */
+  function bindSlider(input) {
+    const output = document.querySelector(`output[for="${input.id}"]`);
+    const update = () => {
+      const min = Number(input.min) || 0;
+      const max = Number(input.max) || 10;
+      const pct = ((Number(input.value) - min) / (max - min)) * 100;
+      input.style.setProperty('--val', pct + '%');
+      if (output) output.textContent = input.value;
+    };
+    input.addEventListener('input', update);
+    update();
+  }
+
+  document.querySelectorAll('input[type="range"]').forEach(bindSlider);
+
+  /* =======================================================================
+     3. EVALUATION ENGINE — read & validate
+     ======================================================================= */
+  function validateEvaluationForm() {
+    const nameInput = document.getElementById('targetName');
+    const priceInput = document.getElementById('targetPrice');
+    const msg = document.getElementById('evalValidation');
+
+    const name = nameInput.value.trim();
+    const price = priceInput.value;
+
+    if (!name) {
+      msg.textContent = 'Enter the target company name before continuing.';
+      msg.className = 'validation-msg error';
+      nameInput.focus();
+      return false;
+    }
+    if (price === '' || Number(price) < 0 || Number.isNaN(Number(price))) {
+      msg.textContent = 'Enter a valid estimated purchase price ($M) before continuing.';
+      msg.className = 'validation-msg error';
+      priceInput.focus();
+      return false;
+    }
+
+    msg.textContent = '';
+    msg.className = 'validation-msg';
+    return true;
+  }
+
+  function syncEvaluationState() {
+    currentDeal.name = document.getElementById('targetName').value.trim();
+    currentDeal.price = Number(document.getElementById('targetPrice').value);
+
+    currentDeal.basics = {
+      core: Number(document.getElementById('q-core').value),
+      competition: Number(document.getElementById('q-competition').value),
+      data: Number(document.getElementById('q-data').value),
+      patterns: Number(document.getElementById('q-patterns').value)
+    };
+
+    currentDeal.pestle = {
+      political: Number(document.getElementById('p-political').value),
+      economic: Number(document.getElementById('p-economic').value),
+      social: Number(document.getElementById('p-social').value),
+      technological: Number(document.getElementById('p-technological').value),
+      legal: Number(document.getElementById('p-legal').value),
+      environmental: Number(document.getElementById('p-environmental').value)
+    };
+  }
+
+  /* =======================================================================
+     4. PRE-MORTEM SIMULATOR — read & validate
+     ======================================================================= */
+  const reasonsTextarea = document.getElementById('premortemReasons');
+  const validationMsg = document.getElementById('premortemValidation');
+
+  function parseReasons() {
+    return reasonsTextarea.value
+      .split('\n')
+      .map((line) => line.replace(/^\s*\d+[.)]\s*/, '').trim())
+      .filter((line) => line.length > 0);
+  }
+
+  function validatePreMortem() {
+    const reasons = parseReasons();
+    if (reasons.length < 3) {
+      validationMsg.textContent = `Please list at least 3 reasons the deal failed (currently ${reasons.length}).`;
+      validationMsg.className = 'validation-msg error';
+      reasonsTextarea.focus();
+      return false;
+    }
+    validationMsg.textContent = `${reasons.length} failure reasons captured.`;
+    validationMsg.className = 'validation-msg ok';
+    return true;
+  }
+
+  reasonsTextarea.addEventListener('input', () => {
+    const count = parseReasons().length;
+    if (count === 0) {
+      validationMsg.textContent = '';
+      validationMsg.className = 'validation-msg';
+    } else if (count < 3) {
+      validationMsg.textContent = `${count} of 3 minimum reasons entered.`;
+      validationMsg.className = 'validation-msg';
+    } else {
+      validationMsg.textContent = `${count} failure reasons captured.`;
+      validationMsg.className = 'validation-msg ok';
+    }
+  });
+
+  function syncPreMortemState() {
+    currentDeal.reasons = parseReasons();
+    currentDeal.confidence = Number(document.getElementById('confidenceSlider').value);
+  }
+
+  /* =======================================================================
+     5. DEAL VIABILITY SCORE (0-100)
+     Weighting rationale:
+       - 50% Strategic Fit: average of the 4 basic questions (each 0-10)
+       - 30% Macro Resilience: inverted average of the 6 PESTLE/VUCA sliders
+         (these sliders measure RISK, so lower risk => higher contribution)
+       - 20% Mitigation Confidence: our pre-mortem confidence slider
+     ======================================================================= */
+  function calculateDealViabilityScore() {
+    const b = currentDeal.basics;
+    const basicAvg = (b.core + b.competition + b.data + b.patterns) / 4; // 0-10
+    const basicScore = basicAvg * 10; // 0-100
+
+    const p = currentDeal.pestle;
+    const riskAvg = (p.political + p.economic + p.social + p.technological + p.legal + p.environmental) / 6; // 0-10
+    const frictionScore = (10 - riskAvg) * 10; // 0-100, higher = less macro friction
+
+    const confidenceScore = currentDeal.confidence * 10; // 0-100
+
+    const weighted = (basicScore * 0.5) + (frictionScore * 0.3) + (confidenceScore * 0.2);
+    currentDeal.score = Math.round(Math.max(0, Math.min(100, weighted)));
+
+    if (currentDeal.score >= 75) currentDeal.verdict = 'PROCEED';
+    else if (currentDeal.score >= 50) currentDeal.verdict = 'REVIEW';
+    else currentDeal.verdict = 'REJECT';
+
+    return currentDeal.score;
+  }
+
+  /* =======================================================================
+     6. EXECUTIVE SYNTHESIS REPORT — render
+     ======================================================================= */
+  const GAUGE_CIRCUMFERENCE = 2 * Math.PI * 52; // r=52, matches SVG in index.html
+
+  function renderSynthesisReport() {
+    document.getElementById('reportTargetName').textContent = currentDeal.name;
+    document.getElementById('reportPrice').textContent = `${currentDeal.price.toLocaleString()}M Estimated Price`;
+
+    // Animated radial gauge
+    const gaugeFill = document.getElementById('gaugeFill');
+    const offset = GAUGE_CIRCUMFERENCE * (1 - currentDeal.score / 100);
+    gaugeFill.style.strokeDasharray = String(GAUGE_CIRCUMFERENCE);
+    // Force a reflow so the transition re-triggers on repeat evaluations.
+    // eslint-disable-next-line no-unused-expressions
+    gaugeFill.getBoundingClientRect();
+    gaugeFill.style.strokeDashoffset = String(offset);
+    document.getElementById('gaugeScore').textContent = currentDeal.score;
+
+    let gaugeColor = 'var(--risk-high)';
+    if (currentDeal.score >= 75) gaugeColor = 'var(--risk-low)';
+    else if (currentDeal.score >= 50) gaugeColor = 'var(--risk-mid)';
+    gaugeFill.style.stroke = gaugeColor;
+
+    // Verdict banner
+    const banner = document.getElementById('verdictBanner');
+    const verdictText = document.getElementById('verdictText');
+    banner.className = 'verdict-banner ' + currentDeal.verdict.toLowerCase();
+    const verdictCopy = {
+      PROCEED: 'PROCEED — Strategic fit and macro conditions support moving forward',
+      REVIEW: 'REVIEW — Mixed signals; convene the deal team before committing capital',
+      REJECT: 'REJECT — Risk profile and strategic fit do not justify this acquisition'
+    };
+    verdictText.textContent = verdictCopy[currentDeal.verdict];
+
+    renderRiskBars();
+
+    // Pre-mortem findings recap
+    const list = document.getElementById('reportReasons');
+    list.innerHTML = '';
+    currentDeal.reasons.forEach((reason) => {
+      const li = document.createElement('li');
+      li.textContent = reason;
+      list.appendChild(li);
+    });
+  }
+
+  function riskColor(value) {
+    // value is 0-10 risk level
+    if (value >= 7) return 'var(--risk-high)';
+    if (value >= 4) return 'var(--risk-mid)';
+    return 'var(--risk-low)';
+  }
+
+  function renderRiskBars() {
+    const container = document.getElementById('riskBars');
+    container.innerHTML = '';
+
+    const rows = [
+      { label: 'Political', value: currentDeal.pestle.political },
+      { label: 'Economic', value: currentDeal.pestle.economic },
+      { label: 'Social', value: currentDeal.pestle.social },
+      { label: 'Technological', value: currentDeal.pestle.technological },
+      { label: 'Legal', value: currentDeal.pestle.legal },
+      { label: 'Environmental', value: currentDeal.pestle.environmental },
+      { label: 'Capability Gap', value: 10 - currentDeal.confidence }
+    ];
+
+    rows.forEach(({ label, value }) => {
+      const row = document.createElement('div');
+      row.className = 'risk-bar-row';
+
+      const labelEl = document.createElement('span');
+      labelEl.textContent = label;
+
+      const track = document.createElement('div');
+      track.className = 'risk-bar-track';
+      const fill = document.createElement('div');
+      fill.className = 'risk-bar-fill';
+      fill.style.background = riskColor(value);
+      track.appendChild(fill);
+
+      const valueEl = document.createElement('span');
+      valueEl.textContent = value.toFixed(0) + ' / 10';
+
+      row.appendChild(labelEl);
+      row.appendChild(track);
+      row.appendChild(valueEl);
+      container.appendChild(row);
+
+      // Animate the fill in on the next frame so the transition is visible.
+      requestAnimationFrame(() => {
+        fill.style.width = (value / 10 * 100) + '%';
+      });
+    });
+  }
+
+  /* =======================================================================
+     7. PORTFOLIO MAP (localStorage-backed)
+     ======================================================================= */
+  function loadPortfolio() {
+    try {
+      return JSON.parse(localStorage.getItem(PORTFOLIO_KEY)) || [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // Storage can be unavailable (private browsing, Safari on file:// URLs, or a
+  // full quota). The portfolio is a convenience, not the core of the tool, so a
+  // failure here degrades quietly rather than breaking the report flow.
+  function savePortfolio(deals) {
+    try {
+      localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(deals));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Holds deals in memory when localStorage is unavailable, so the map still
+  // works for the duration of the session.
+  let sessionDeals = null;
+
+  function renderPortfolio(dealsOverride) {
+    const deals = dealsOverride || sessionDeals || loadPortfolio();
+    const plot = document.getElementById('portfolioPlot');
+    const empty = document.getElementById('portfolioEmpty');
+    const list = document.getElementById('portfolioList');
+
+    // Clear previously plotted bubbles (keep the static gridlines/labels).
+    plot.querySelectorAll('.deal-bubble').forEach((el) => el.remove());
+    list.innerHTML = '';
+
+    if (deals.length === 0) {
+      empty.style.display = 'block';
+      empty.textContent = 'No deals evaluated yet. Head to the Evaluation Engine to begin.';
+      return;
+    }
+    empty.style.display = 'none';
+
+    const maxPrice = Math.max(...deals.map((d) => d.price), 1);
+
+    deals.forEach((deal) => {
+      const bubble = document.createElement('div');
+      bubble.className = 'deal-bubble';
+      bubble.title = `${deal.name} — Score ${deal.score}, ${deal.price}M`;
+      const xPct = Math.min(95, Math.max(5, (deal.price / maxPrice) * 90 + 5));
+      const yPct = Math.min(95, Math.max(5, deal.score));
+      bubble.style.left = xPct + '%';
+      bubble.style.bottom = yPct + '%';
+      bubble.style.background = deal.verdict === 'PROCEED'
+        ? 'var(--risk-low)'
+        : deal.verdict === 'REVIEW' ? 'var(--risk-mid)' : 'var(--risk-high)';
+      plot.appendChild(bubble);
+
+      const item = document.createElement('div');
+      item.className = 'portfolio-item';
+      item.innerHTML = `
+        <span class="pi-name">${escapeHtml(deal.name)}</span>
+        <span class="pi-meta">${deal.price.toLocaleString()}M &middot; Score ${deal.score}</span>
+        <span class="pi-verdict" style="background:${verdictBg(deal.verdict)};color:${verdictFg(deal.verdict)}">${deal.verdict}</span>
+      `;
+      list.appendChild(item);
+    });
+  }
+
+  function verdictBg(v) {
+    return v === 'PROCEED' ? 'rgba(46,158,107,0.22)' : v === 'REVIEW' ? 'rgba(217,164,65,0.22)' : 'rgba(200,80,63,0.22)';
+  }
+  function verdictFg(v) {
+    return v === 'PROCEED' ? '#7be0ae' : v === 'REVIEW' ? '#ffd27a' : '#ff9d8e';
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.getElementById('saveDealBtn').addEventListener('click', () => {
+    const deals = loadPortfolio();
+    deals.push({
+      name: currentDeal.name,
+      price: currentDeal.price,
+      score: currentDeal.score,
+      verdict: currentDeal.verdict,
+      savedAt: new Date().toISOString()
+    });
+
+    if (!savePortfolio(deals)) {
+      // Plot it for this session anyway so the click still does something visible.
+      sessionDeals = deals;
+      renderPortfolio(deals);
+      showPanel('strategic-map');
+      const empty = document.getElementById('portfolioEmpty');
+      empty.style.display = 'block';
+      empty.textContent = 'Browser storage is unavailable, so this deal is plotted for this session only and will be lost on refresh.';
+      return;
+    }
+
+    sessionDeals = null;
+    renderPortfolio();
+    showPanel('strategic-map');
+  });
+
+  /* =======================================================================
+     8. PRINT
+     ======================================================================= */
+  document.getElementById('printBtn').addEventListener('click', () => {
+    document.getElementById('executive-synthesis').classList.add('panel-print-force');
+    window.print();
+  });
+
+  window.addEventListener('afterprint', () => {
+    document.getElementById('executive-synthesis').classList.remove('panel-print-force');
+  });
+
+  /* =======================================================================
+     9. RESET
+     ======================================================================= */
+  function resetEvaluation() {
+    document.getElementById('evaluationForm').reset();
+    reasonsTextarea.value = '';
+    document.querySelectorAll('.validation-msg').forEach((el) => {
+      el.textContent = '';
+      el.className = 'validation-msg';
+    });
+    document.querySelectorAll('input[type="range"]').forEach((input) => {
+      input.value = 5;
+      input.dispatchEvent(new Event('input'));
+    });
+    currentDeal.name = '';
+    currentDeal.price = 0;
+    currentDeal.reasons = [];
+    currentDeal.score = 0;
+    currentDeal.verdict = 'PENDING';
+    showPanel('evaluation-engine');
+  }
+
+  /* =======================================================================
+     INIT
+     ======================================================================= */
+  renderPortfolio();
+})();
+
+</script>
+</body>
+</html>
