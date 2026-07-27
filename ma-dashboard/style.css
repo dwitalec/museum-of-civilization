@@ -44,7 +44,9 @@ html, body {
 }
 
 body {
-  font-family: "Segoe UI", Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+  /* -apple-system first so iPadOS/macOS resolve to San Francisco rather than
+     falling through the stack; Segoe UI covers Windows, Roboto Android. */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--white);
   background: linear-gradient(160deg, var(--navy-950) 0%, var(--navy-900) 45%, var(--navy-800) 100%);
   min-height: 100vh;
