@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Progressive | M&amp;A Evaluation Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Decorative ambient background blobs (pure CSS, purely visual) -->
+  <div class="bg-decor" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="app-header glass">
+    <div class="brand">
+      <span class="brand-mark">PG</span>
+      <div class="brand-text">
+        <strong>Progressive Insurance</strong>
+        <span>M&amp;A Evaluation Dashboard</span>
+      </div>
+    </div>
+
+    <nav class="tab-nav" role="tablist" aria-label="Dashboard sections">
+      <button class="tab-btn active" data-target="strategic-map" role="tab" aria-selected="true">
+        <span class="tab-num">1</span> Strategic Map
+      </button>
+      <button class="tab-btn" data-target="evaluation-engine" role="tab" aria-selected="false">
+        <span class="tab-num">2</span> Evaluation Engine
+      </button>
+      <button class="tab-btn" data-target="pre-mortem" role="tab" aria-selected="false">
+        <span class="tab-num">3</span> Pre-Mortem Simulator
+      </button>
+      <button class="tab-btn" data-target="executive-synthesis" role="tab" aria-selected="false">
+        <span class="tab-num">4</span> Executive Synthesis
+      </button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+
+    <!-- ======================================================= -->
+    <!-- SECTION 1: STRATEGIC MAP (HOME SCREEN)                   -->
+    <!-- ======================================================= -->
+    <section id="strategic-map" class="panel active">
+
+      <div class="panel-intro glass">
+        <h1>The Strategic Map</h1>
+        <p class="advantage-statement">
+          <span class="advantage-tag">Our Core Strategic Advantage</span>
+          Decades of proprietary driver data and Snapshot telematics give us the industry's sharpest
+          risk segmentation &mdash; we price micro-segments competitors have to price as averages.
+          That edge is amplified by a dual distribution engine (direct-to-consumer at scale plus a deep
+          independent-agent network) and a culture that holds every book to underwriting profit,
+          not premium growth.
+        </p>
+        <p>
+          Every acquisition candidate must be weighed against the eight ways M&amp;A destroys value
+          &mdash; before it destroys ours.
+        </p>
+      </div>
+
+      <h2 class="section-heading">The 8 M&amp;A Failure Archetypes</h2>
+      <div class="archetype-grid">
+        <!-- Each card below is a self-contained failure mode. Data lives in HTML so it can be
+             skimmed at a glance, but interactive states (hover flip) are handled in CSS. -->
+        <article class="archetype-card glass" data-archetype="liability">
+          <span class="archetype-index">01</span>
+          <h3>Liability Underwriting</h3>
+          <p>Underestimating hidden claims reserves, IBNR gaps, or regulatory exposure baked into the target's back book.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="perpetuity">
+          <span class="archetype-index">02</span>
+          <h3>Perpetuity Error</h3>
+          <p>Assuming today's loss ratios, retention, and combined ratio trends continue forever, uncorrected by cycle.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="peak">
+          <span class="archetype-index">03</span>
+          <h3>Peak Extrapolation</h3>
+          <p>Valuing the target off a cyclical high &mdash; soft pricing, low cat losses &mdash; that will not persist.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="structure">
+          <span class="archetype-index">04</span>
+          <h3>Structure Unchanged</h3>
+          <p>Assuming distribution, agent relationships, and state filings hold static post-close.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="policy-bet">
+          <span class="archetype-index">05</span>
+          <h3>Policy Bet</h3>
+          <p>Betting the entire thesis on one product line, state, or regulatory ruling instead of a resilient book.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="substitution">
+          <span class="archetype-index">06</span>
+          <h3>Substitution Blindness</h3>
+          <p>Missing that InsurTechs, telematics-first entrants, or embedded insurance can substitute the offering entirely.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="capability">
+          <span class="archetype-index">07</span>
+          <h3>Capability Illusion</h3>
+          <p>Believing the target's underwriting and claims talent, data, and models transfer cleanly into our systems.</p>
+        </article>
+        <article class="archetype-card glass" data-archetype="closing">
+          <span class="archetype-index">08</span>
+          <h3>Closing Risk</h3>
+          <p>State DOI approval delays, rate-filing freezes, or integration slippage erode value before the deal ever closes.</p>
+        </article>
+      </div>
+
+      <h2 class="section-heading">Deal Portfolio Map</h2>
+      <p class="section-subtext">Every evaluation you complete and save is plotted here &mdash; price vs. viability score.</p>
+      <div class="portfolio-wrapper glass">
+        <div id="portfolioPlot" class="portfolio-plot">
+          <div class="plot-axis-label plot-axis-y">Deal Viability Score</div>
+          <div class="plot-axis-label plot-axis-x">Estimated Price ($M)</div>
+          <div class="plot-gridlines"></div>
+          <!-- deal bubbles injected by JS -->
+        </div>
+        <div id="portfolioEmpty" class="portfolio-empty">No deals evaluated yet. Head to the Evaluation Engine to begin.</div>
+        <div id="portfolioList" class="portfolio-list"></div>
+      </div>
+
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 2: THE EVALUATION ENGINE (INPUT FORM)            -->
+    <!-- ======================================================= -->
+    <section id="evaluation-engine" class="panel">
+
+      <div class="panel-intro glass">
+        <h1>The Evaluation Engine</h1>
+        <p>Score the target against our strategic fundamentals and the macro friction acting on the P&amp;C insurance sector.</p>
+      </div>
+
+      <form id="evaluationForm" class="glass form-card">
+
+        <div class="field-row">
+          <div class="field">
+            <label for="targetName">Target Company Name</label>
+            <input type="text" id="targetName" placeholder="e.g. Apex Regional Insurers" required />
+          </div>
+          <div class="field">
+            <label for="targetPrice">Estimated Purchase Price ($M)</label>
+            <input type="number" id="targetPrice" min="0" step="1" placeholder="e.g. 850" required />
+          </div>
+        </div>
+
+        <h2 class="form-section-title">The 4 Basic Questions</h2>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-core">
+            <strong>Core Competency</strong> &mdash; Does this target enhance our proprietary
+            data-driven risk segmentation (Snapshot telematics), our dual direct + independent-agent
+            distribution engine, and our underwriting-profit discipline?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-core" min="0" max="10" step="1" value="5" />
+            <output for="q-core">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-competition">
+            <strong>Competition</strong> &mdash; Does this counter primary competitors like
+            GEICO, State Farm, and Allstate?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-competition" min="0" max="10" step="1" value="5" />
+            <output for="q-competition">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-data">
+            <strong>Fascinating Data</strong> &mdash; Do the data anomalies (loss ratios, retention
+            curves, claims severity trends) support this move?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-data" min="0" max="10" step="1" value="5" />
+            <output for="q-data">5</output>
+          </div>
+        </div>
+
+        <div class="slider-field" data-weight="basic">
+          <label for="q-patterns">
+            <strong>Patterns</strong> &mdash; Are we buying at the right point in the P&amp;C
+            insurance underwriting cycle (hard vs. soft market)?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="q-patterns" min="0" max="10" step="1" value="5" />
+            <output for="q-patterns">5</output>
+          </div>
+        </div>
+
+        <h2 class="form-section-title">PESTLE &amp; VUCA Macro Friction</h2>
+        <p class="section-subtext">Rate the level of risk / friction (0 = negligible, 10 = severe) specific to the P&amp;C insurance sector.</p>
+
+        <div class="pestle-grid">
+          <div class="slider-field" data-weight="friction">
+            <label for="p-political"><strong>Political</strong> &mdash; State DOI leadership &amp; rate-approval climate</label>
+            <div class="slider-row">
+              <input type="range" id="p-political" min="0" max="10" step="1" value="5" />
+              <output for="p-political">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-economic"><strong>Economic</strong> &mdash; Inflation, rates, and repair/replacement cost trends</label>
+            <div class="slider-row">
+              <input type="range" id="p-economic" min="0" max="10" step="1" value="5" />
+              <output for="p-economic">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-social"><strong>Social</strong> &mdash; Channel preference shifts &amp; trust in usage-based monitoring</label>
+            <div class="slider-row">
+              <input type="range" id="p-social" min="0" max="10" step="1" value="5" />
+              <output for="p-social">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-technological"><strong>Technological</strong> &mdash; Telematics, AI claims automation &amp; InsurTech disruption pace</label>
+            <div class="slider-row">
+              <input type="range" id="p-technological" min="0" max="10" step="1" value="5" />
+              <output for="p-technological">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-legal"><strong>Legal</strong> &mdash; Litigation trends, tort reform &amp; social inflation</label>
+            <div class="slider-row">
+              <input type="range" id="p-legal" min="0" max="10" step="1" value="5" />
+              <output for="p-legal">5</output>
+            </div>
+          </div>
+          <div class="slider-field" data-weight="friction">
+            <label for="p-environmental"><strong>Environmental</strong> &mdash; Catastrophe &amp; climate exposure (hurricane, wildfire, flood)</label>
+            <div class="slider-row">
+              <input type="range" id="p-environmental" min="0" max="10" step="1" value="5" />
+              <output for="p-environmental">5</output>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" id="toPreMortemBtn">Continue to Pre-Mortem Simulator &rarr;</button>
+          <div id="evalValidation" class="validation-msg"></div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 3: THE PRE-MORTEM SIMULATOR                      -->
+    <!-- ======================================================= -->
+    <section id="pre-mortem" class="panel">
+
+      <div class="panel-intro glass">
+        <h1>The Pre-Mortem Simulator</h1>
+      </div>
+
+      <div class="warning-card glass">
+        <div class="warning-icon">&#9888;</div>
+        <p>
+          Assume it is <strong>three years from today</strong> and the acquisition of
+          <strong><span id="premortemTargetName">this target</span></strong> has been an
+          <strong>unmitigated disaster</strong>, destroying massive shareholder value.
+        </p>
+      </div>
+
+      <div class="form-card glass">
+        <label for="premortemReasons" class="pre-mortem-label">
+          List at least <strong>3 reasons</strong> the deal failed. Specifically hunt for
+          <strong>Capability Illusions</strong> (talent/systems that didn't transfer) or
+          <strong>Substitution Blindness</strong> (an InsurTech, telematics-first player, or
+          embedded-insurance channel that made the target's offering obsolete). One reason per line.
+        </label>
+        <textarea id="premortemReasons" rows="8" placeholder="1. Our claims platform couldn't absorb their legacy policy admin system...&#10;2. A telematics-first InsurTech undercut the target's core book within 18 months...&#10;3. Their top underwriting talent left within the first year, taking tribal risk knowledge with them..."></textarea>
+        <div id="premortemValidation" class="validation-msg"></div>
+
+        <div class="slider-field confidence-slider">
+          <label for="confidenceSlider">
+            <strong>Mitigation Confidence</strong> &mdash; How confident are we, today, in mitigating these
+            specific future risks?
+          </label>
+          <div class="slider-row">
+            <input type="range" id="confidenceSlider" min="0" max="10" step="1" value="5" />
+            <output for="confidenceSlider">5</output>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="backToEvalBtn">&larr; Back</button>
+          <button type="button" class="btn btn-primary" id="toSynthesisBtn">Generate Executive Synthesis &rarr;</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- SECTION 4: THE EXECUTIVE SYNTHESIS REPORT                -->
+    <!-- ======================================================= -->
+    <section id="executive-synthesis" class="panel">
+
+      <div class="panel-intro glass no-print">
+        <h1>The Executive Synthesis Report</h1>
+        <p>A printable, board-ready summary of the deal's viability.</p>
+      </div>
+
+      <div id="synthesisReport" class="glass report-card">
+        <!-- Only rendered on paper: the app chrome is hidden when printing. -->
+        <div class="print-only print-letterhead">
+          Progressive Insurance &middot; M&amp;A Evaluation Dashboard &middot; Confidential
+        </div>
+        <div class="report-header">
+          <div>
+            <h2 id="reportTargetName">Target Name</h2>
+            <span id="reportPrice" class="report-price">$0M Estimated Price</span>
+          </div>
+          <div class="score-gauge">
+            <svg viewBox="0 0 120 120" class="gauge-svg">
+              <circle cx="60" cy="60" r="52" class="gauge-track"></circle>
+              <circle cx="60" cy="60" r="52" class="gauge-fill" id="gaugeFill"></circle>
+            </svg>
+            <div class="gauge-label">
+              <span id="gaugeScore">0</span>
+              <small>/ 100</small>
+            </div>
+          </div>
+        </div>
+
+        <div id="verdictBanner" class="verdict-banner">
+          <span id="verdictText">PENDING</span>
+        </div>
+
+        <h3 class="report-subheading">Risk &amp; Friction Breakdown</h3>
+        <div id="riskBars" class="risk-bars"></div>
+
+        <h3 class="report-subheading">Pre-Mortem Findings</h3>
+        <ul id="reportReasons" class="reasons-list"></ul>
+
+        <div class="form-actions no-print">
+          <button type="button" class="btn btn-secondary" id="backToPreMortemBtn">&larr; Back</button>
+          <button type="button" class="btn btn-secondary" id="printBtn">Print Report</button>
+          <button type="button" class="btn btn-primary" id="saveDealBtn">Save to Portfolio Map</button>
+          <button type="button" class="btn btn-ghost" id="newEvalBtn">Start New Evaluation</button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="app-footer no-print">
+    <p>Progressive Insurance &middot; Internal Strategy Tool &middot; Client-side only, no data leaves this browser.</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
