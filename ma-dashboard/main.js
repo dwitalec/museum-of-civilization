@@ -317,12 +317,24 @@
     }
   }
 
+  // Storage can be unavailable (private browsing, Safari on file:// URLs, or a
+  // full quota). The portfolio is a convenience, not the core of the tool, so a
+  // failure here degrades quietly rather than breaking the report flow.
   function savePortfolio(deals) {
-    localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(deals));
+    try {
+      localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(deals));
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
-  function renderPortfolio() {
-    const deals = loadPortfolio();
+  // Holds deals in memory when localStorage is unavailable, so the map still
+  // works for the duration of the session.
+  let sessionDeals = null;
+
+  function renderPortfolio(dealsOverride) {
+    const deals = dealsOverride || sessionDeals || loadPortfolio();
     const plot = document.getElementById('portfolioPlot');
     const empty = document.getElementById('portfolioEmpty');
     const list = document.getElementById('portfolioList');
@@ -333,6 +345,7 @@
 
     if (deals.length === 0) {
       empty.style.display = 'block';
+      empty.textContent = 'No deals evaluated yet. Head to the Evaluation Engine to begin.';
       return;
     }
     empty.style.display = 'none';
@@ -385,7 +398,19 @@
       verdict: currentDeal.verdict,
       savedAt: new Date().toISOString()
     });
-    savePortfolio(deals);
+
+    if (!savePortfolio(deals)) {
+      // Plot it for this session anyway so the click still does something visible.
+      sessionDeals = deals;
+      renderPortfolio(deals);
+      showPanel('strategic-map');
+      const empty = document.getElementById('portfolioEmpty');
+      empty.style.display = 'block';
+      empty.textContent = 'Browser storage is unavailable, so this deal is plotted for this session only and will be lost on refresh.';
+      return;
+    }
+
+    sessionDeals = null;
     renderPortfolio();
     showPanel('strategic-map');
   });
